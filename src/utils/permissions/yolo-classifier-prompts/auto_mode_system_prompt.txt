@@ -1,0 +1,1 @@
+# Stub for auto_mode_system_prompt.txt

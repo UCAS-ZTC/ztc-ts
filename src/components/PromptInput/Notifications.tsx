@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import { feature } from 'bun:bundle';
+import { feature } from '../../../shims/bun-bundle.js';
 import * as React from 'react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { type Notification, useNotifications } from 'src/context/notifications.js';
@@ -305,7 +305,7 @@ function NotificationContent({
         </Box>}
       {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && <Box>
           <Text color="error" wrap="truncate">
-            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ? 'Authentication error · Try again' : 'Not logged in · Run /login'}
+            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) ? '认证错误 · 请重试' : '未登录 · 执行 /login'}
           </Text>
         </Box>}
       {debug && <Box>

@@ -97,7 +97,7 @@ export function WorkspaceTab(t0) {
     let t6;
     if ($[14] === Symbol.for("react.memo_cache_sentinel")) {
       t6 = {
-        label: `Add directory${figures.ellipsis}`,
+        label: `添加目录${figures.ellipsis}`,
         value: "add-directory"
       };
       $[14] = t6;

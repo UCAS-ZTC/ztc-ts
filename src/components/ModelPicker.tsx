@@ -260,7 +260,7 @@ export function ModelPicker(t0) {
   const handleSelect = t14;
   let t15;
   if ($[41] === Symbol.for("react.memo_cache_sentinel")) {
-    t15 = <Text color="remember" bold={true}>Select model</Text>;
+    t15 = <Text color="remember" bold={true}>选择模型</Text>;
     $[41] = t15;
   } else {
     t15 = $[41];
@@ -325,7 +325,7 @@ export function ModelPicker(t0) {
   }
   let t24;
   if ($[62] !== displayEffort || $[63] !== focusedDefaultEffort || $[64] !== focusedModelName || $[65] !== focusedSupportsEffort) {
-    t24 = <Box marginBottom={1} flexDirection="column">{focusedSupportsEffort ? <Text dimColor={true}><EffortLevelIndicator effort={displayEffort} />{" "}{capitalize(displayEffort)} effort{displayEffort === focusedDefaultEffort ? " (default)" : ""}{" "}<Text color="subtle">← → to adjust</Text></Text> : <Text color="subtle"><EffortLevelIndicator effort={undefined} /> Effort not supported{focusedModelName ? ` for ${focusedModelName}` : ""}</Text>}</Box>;
+    t24 = <Box marginBottom={1} flexDirection="column">{focusedSupportsEffort ? <Text dimColor={true}><EffortLevelIndicator effort={displayEffort} />{" "}{capitalize(displayEffort)} effort{displayEffort === focusedDefaultEffort ? " （默认）" : ""}{" "}<Text color="subtle">← → to adjust</Text></Text> : <Text color="subtle"><EffortLevelIndicator effort={undefined} /> 不支持调节强度{focusedModelName ? `（${focusedModelName}）` : ""}</Text>}</Box>;
     $[62] = displayEffort;
     $[63] = focusedDefaultEffort;
     $[64] = focusedModelName;

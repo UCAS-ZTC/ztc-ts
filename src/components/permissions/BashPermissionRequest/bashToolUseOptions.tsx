@@ -62,7 +62,7 @@ export function bashToolUseOptions({
   if (yesInputMode) {
     options.push({
       type: 'input',
-      label: 'Yes',
+      label: '是',
       value: 'yes',
       placeholder: 'and tell Claude what to do next',
       onChange: onAcceptFeedbackChange,
@@ -70,7 +70,7 @@ export function bashToolUseOptions({
     });
   } else {
     options.push({
-      label: 'Yes',
+      label: '是',
       value: 'yes'
     });
   }
@@ -85,7 +85,7 @@ export function bashToolUseOptions({
     if (editablePrefix !== undefined && onEditablePrefixChange && !hasNonBashSuggestions && suggestions.length > 0) {
       options.push({
         type: 'input',
-        label: 'Yes, and don\u2019t ask again for',
+        label: '是，并且不再询问',
         value: 'yes-prefix-edited',
         placeholder: 'command prefix (e.g., npm run:*)',
         initialValue: editablePrefix,
@@ -115,7 +115,7 @@ export function bashToolUseOptions({
     if ("external" === 'ant' && !editablePrefixShown && isClassifierPermissionsEnabled() && onClassifierDescriptionChange && !initialClassifierDescriptionEmpty && !descriptionAlreadyExists(classifierDescription ?? '', existingAllowDescriptions) && decisionReason?.type !== 'classifier') {
       options.push({
         type: 'input',
-        label: 'Yes, and don\u2019t ask again for',
+        label: '是，并且不再询问',
         value: 'yes-classifier-reviewed',
         placeholder: 'describe what to allow...',
         initialValue: classifierDescription ?? '',
@@ -130,7 +130,7 @@ export function bashToolUseOptions({
   if (noInputMode) {
     options.push({
       type: 'input',
-      label: 'No',
+      label: '否',
       value: 'no',
       placeholder: 'and tell Claude what to do differently',
       onChange: onRejectFeedbackChange,
@@ -138,7 +138,7 @@ export function bashToolUseOptions({
     });
   } else {
     options.push({
-      label: 'No',
+      label: '否',
       value: 'no'
     });
   }

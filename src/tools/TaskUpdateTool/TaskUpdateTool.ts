@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../../shims/bun-bundle.js'
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../../services/analytics/growthbook.js'
 import { buildTool, type ToolDef } from '../../Tool.js'

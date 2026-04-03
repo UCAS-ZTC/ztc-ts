@@ -33,7 +33,7 @@ const LOCAL_REVIEW_PROMPT = (args: string) => `
 const review: Command = {
   type: 'prompt',
   name: 'review',
-  description: 'Review a pull request',
+  description: '审查 Pull Request',
   progressMessage: 'reviewing pull request',
   contentLength: 0,
   source: 'builtin',

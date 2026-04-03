@@ -1,5 +1,6 @@
 import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
+import { isOpenAICompatMode, createOpenAICompatFetch } from './openai-compat.js'
 import type { GoogleAuth } from 'google-auth-library'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
@@ -360,17 +361,17 @@ function buildFetch(
   source: string | undefined,
 ): ClientOptions['fetch'] {
   // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
-  const inner = fetchOverride ?? globalThis.fetch
-  // Only send to the first-party API — Bedrock/Vertex/Foundry don't log it
-  // and unknown headers risk rejection by strict proxies (inc-4029 class).
+  let inner = fetchOverride ?? globalThis.fetch
+
+  if (isOpenAICompatMode()) {
+    inner = createOpenAICompatFetch(inner as any) as any
+  }
+
   const injectClientRequestId =
     getAPIProvider() === 'firstParty' && isFirstPartyAnthropicBaseUrl()
   return (input, init) => {
     // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
     const headers = new Headers(init?.headers)
-    // Generate a client-side request ID so timeouts (which return no server
-    // request ID) can still be correlated with server logs by the API team.
-    // Callers that want to track the ID themselves can pre-set the header.
     if (injectClientRequestId && !headers.has(CLIENT_REQUEST_ID_HEADER)) {
       headers.set(CLIENT_REQUEST_ID_HEADER, randomUUID())
     }

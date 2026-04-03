@@ -95,14 +95,14 @@ export function generateShellSuggestionsLabel(suggestions: PermissionUpdate[], s
       const firstPath = readPaths[0]!;
       const dirName = basename(firstPath) || firstPath;
       return <Text>
-          Yes, allow reading from <Text bold>{dirName}</Text>
+          是，允许读取 <Text bold>{dirName}</Text>
           {sep} from this project
         </Text>;
     }
 
     // Multiple read paths
     return <Text>
-        Yes, allow reading from {formatPathList(readPaths)} from this project
+        是，允许读取此项目中的 {formatPathList(readPaths)}
       </Text>;
   }
   if (hasDirectories && !hasReadPaths && !hasCommands) {
@@ -111,22 +111,21 @@ export function generateShellSuggestionsLabel(suggestions: PermissionUpdate[], s
       const firstDir = directories[0]!;
       const dirName = basename(firstDir) || firstDir;
       return <Text>
-          Yes, and always allow access to <Text bold>{dirName}</Text>
+          是，且始终允许访问 <Text bold>{dirName}</Text>
           {sep} from this project
         </Text>;
     }
 
     // Multiple directories
     return <Text>
-        Yes, and always allow access to {formatPathList(directories)} from this
-        project
+        是，且始终允许访问此项目中的 {formatPathList(directories)}
       </Text>;
   }
   if (hasCommands && !hasDirectories && !hasReadPaths) {
     // Only shell command permissions
     return <Text>
-        {"Yes, and don't ask again for "}
-        {commandListDisplayTruncated(shellCommands)} commands in{' '}
+        {"是，且不再询问 "}
+        {commandListDisplayTruncated(shellCommands)} 命令在{' '}
         <Text bold>{getOriginalCwd()}</Text>
       </Text>;
   }
@@ -138,8 +137,7 @@ export function generateShellSuggestionsLabel(suggestions: PermissionUpdate[], s
     if (hasDirectories && hasReadPaths) {
       // Mixed - use generic "access to"
       return <Text>
-          Yes, and always allow access to {formatPathList(allPaths)} from this
-          project
+          是，且始终允许访问此项目中的 {formatPathList(allPaths)}
         </Text>;
     }
   }
@@ -150,13 +148,13 @@ export function generateShellSuggestionsLabel(suggestions: PermissionUpdate[], s
     // Keep it concise but informative
     if (allPaths.length === 1 && shellCommands.length === 1) {
       return <Text>
-          Yes, and allow access to {formatPathList(allPaths)} and{' '}
-          {commandListDisplayTruncated(shellCommands)} commands
+          是，允许访问 {formatPathList(allPaths)} 和{' '}
+          {commandListDisplayTruncated(shellCommands)} 命令
         </Text>;
     }
     return <Text>
-        Yes, and allow {formatPathList(allPaths)} access and{' '}
-        {commandListDisplayTruncated(shellCommands)} commands
+        是，允许 {formatPathList(allPaths)} 的访问权限和{' '}
+        {commandListDisplayTruncated(shellCommands)} 命令
       </Text>;
   }
   return null;

@@ -89,7 +89,7 @@ export function AssistantTextMessage(t0) {
         const upgradeHint = t2;
         let t3;
         if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
-          t3 = <MessageResponse height={1}><Text color="error">Context limit reached · /compact or /clear to continue{upgradeHint ? ` · ${upgradeHint}` : ""}</Text></MessageResponse>;
+          t3 = <MessageResponse height={1}><Text color="error">已达上下文上限 · 使用 /compact 或 /clear 继续{upgradeHint ? ` · ${upgradeHint}` : ""}</Text></MessageResponse>;
           $[4] = t3;
         } else {
           t3 = $[4];
@@ -197,7 +197,7 @@ export function AssistantTextMessage(t0) {
       {
         if (startsWithApiErrorPrefix(text)) {
           const truncated = !verbose && text.length > MAX_API_ERROR_CHARS;
-          const t2 = text === API_ERROR_MESSAGE_PREFIX ? `${API_ERROR_MESSAGE_PREFIX}: Please wait a moment and try again.` : truncated ? text.slice(0, MAX_API_ERROR_CHARS) + "\u2026" : text;
+          const t2 = text === API_ERROR_MESSAGE_PREFIX ? `${API_ERROR_MESSAGE_PREFIX}: 请稍候片刻再试。` : truncated ? text.slice(0, MAX_API_ERROR_CHARS) + "\u2026" : text;
           let t3;
           if ($[15] !== t2) {
             t3 = <Text color="error">{t2}</Text>;

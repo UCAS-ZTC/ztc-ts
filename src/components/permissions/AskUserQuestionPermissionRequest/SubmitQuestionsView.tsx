@@ -92,7 +92,7 @@ export function SubmitQuestionsView(t0) {
   if ($[14] === Symbol.for("react.memo_cache_sentinel")) {
     t8 = {
       type: "text" as const,
-      label: "Submit answers",
+      label: "提交回答",
       value: "submit"
     };
     $[14] = t8;
@@ -103,7 +103,7 @@ export function SubmitQuestionsView(t0) {
   if ($[15] === Symbol.for("react.memo_cache_sentinel")) {
     t9 = [t8, {
       type: "text" as const,
-      label: "Cancel",
+      label: "取消",
       value: "cancel"
     }];
     $[15] = t9;

@@ -1,2 +1,6 @@
 __pycache__/
 archive/
+node_modules/
+bun.lockb
+dist/
+*.log

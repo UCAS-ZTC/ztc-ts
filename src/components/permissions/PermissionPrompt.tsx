@@ -28,8 +28,8 @@ export type PermissionPromptProps<T extends string> = {
   toolAnalyticsContext?: ToolAnalyticsContext;
 };
 const DEFAULT_PLACEHOLDERS: Record<FeedbackType, string> = {
-  accept: 'tell Claude what to do next',
-  reject: 'tell Claude what to do differently'
+  accept: '告诉 Claude 接下来做什么',
+  reject: '告诉 Claude 换种方式做'
 };
 
 /**
@@ -51,7 +51,7 @@ export function PermissionPrompt(t0) {
     question: t1,
     toolAnalyticsContext
   } = t0;
-  const question = t1 === undefined ? "Do you want to proceed?" : t1;
+  const question = t1 === undefined ? "是否继续？" : t1;
   const setAppState = useSetAppState();
   const [acceptFeedback, setAcceptFeedback] = useState("");
   const [rejectFeedback, setRejectFeedback] = useState("");

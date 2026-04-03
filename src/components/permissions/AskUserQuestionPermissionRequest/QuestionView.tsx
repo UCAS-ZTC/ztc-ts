@@ -206,7 +206,7 @@ export function QuestionView(t0) {
       t12 = {
         type: "input" as const,
         value: "__other__",
-        label: "Other",
+        label: "其他",
         placeholder: t9,
         initialValue: t10,
         onChange: t11

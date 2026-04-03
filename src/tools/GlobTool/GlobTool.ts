@@ -179,7 +179,7 @@ export const GlobTool = buildTool({
       return {
         tool_use_id: toolUseID,
         type: 'tool_result',
-        content: 'No files found',
+        content: '未找到文件',
       }
     }
     return {

@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import { feature } from 'bun:bundle';
+import { feature } from '../../shims/bun-bundle.js';
 import { plot as asciichart } from 'asciichart';
 import chalk from 'chalk';
 import figures from 'figures';
@@ -9,6 +9,7 @@ import type { CommandResultDisplay } from '../commands.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { applyColor } from '../ink/colorize.js';
 import { stringWidth as getStringWidth } from '../ink/stringWidth.js';
+import { padEndVisual } from '../utils/cjkAlign.js';
 import type { Color } from '../ink/styles.js';
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow stats navigation
 import { Ansi, Box, Text, useInput } from '../ink.js';
@@ -1104,17 +1105,10 @@ function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
   const COL2_START = 40;
   const COL2_LABEL_WIDTH = 18;
   const row = (l1: string, v1: string, l2: string, v2: string): string => {
-    // Build column 1: label + value
-    const label1 = (l1 + ':').padEnd(COL1_LABEL_WIDTH);
-    const col1PlainLen = label1.length + v1.length;
-
-    // Calculate spaces needed between col1 value and col2 label
-    const spaceBetween = Math.max(2, COL2_START - col1PlainLen);
-
-    // Build column 2: label + value
-    const label2 = (l2 + ':').padEnd(COL2_LABEL_WIDTH);
-
-    // Assemble with colors applied to values only
+    const label1 = padEndVisual(l1 + ':', COL1_LABEL_WIDTH);
+    const col1Width = getStringWidth(label1) + getStringWidth(v1);
+    const spaceBetween = Math.max(2, COL2_START - col1Width);
+    const label2 = padEndVisual(l2 + ':', COL2_LABEL_WIDTH);
     return label1 + h(v1) + ' '.repeat(spaceBetween) + label2 + h(v2);
   };
 

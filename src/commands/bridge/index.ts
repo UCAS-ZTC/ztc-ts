@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../../shims/bun-bundle.js'
 import { isBridgeEnabled } from '../../bridge/bridgeEnabled.js'
 import type { Command } from '../../commands.js'
 
@@ -13,7 +13,7 @@ const bridge = {
   type: 'local-jsx',
   name: 'remote-control',
   aliases: ['rc'],
-  description: 'Connect this terminal for remote-control sessions',
+  description: '连接此终端进行远程控制会话',
   argumentHint: '[name]',
   isEnabled,
   get isHidden() {

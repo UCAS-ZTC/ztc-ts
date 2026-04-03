@@ -21,13 +21,13 @@ function buildPrimarySection(): Property[] {
   const customTitle = getCurrentSessionTitle(sessionId);
   const nameValue = customTitle ?? <Text dimColor>/rename to add a name</Text>;
   return [{
-    label: 'Version',
+    label: '版本',
     value: MACRO.VERSION
   }, {
-    label: 'Session name',
+    label: '会话名称',
     value: nameValue
   }, {
-    label: 'Session ID',
+    label: '会话 ID',
     value: sessionId
   }, {
     label: 'cwd',
@@ -47,7 +47,7 @@ function buildSecondarySection({
 }): Property[] {
   const modelLabel = getModelDisplayLabel(mainLoopModel);
   return [{
-    label: 'Model',
+    label: '模型',
     value: modelLabel
   }, ...buildIDEProperties(mcp.clients, context.options.ideInstallationStatus, theme), ...buildMcpProperties(mcp.clients, theme), ...buildSandboxProperties(), ...buildSettingSourcesProperties()];
 }

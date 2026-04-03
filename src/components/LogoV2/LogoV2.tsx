@@ -25,7 +25,7 @@ import { getStartupPerfLogPath, isDetailedProfilingEnabled } from 'src/utils/sta
 import { EmergencyTip } from './EmergencyTip.js';
 import { VoiceModeNotice } from './VoiceModeNotice.js';
 import { Opus1mMergeNotice } from './Opus1mMergeNotice.js';
-import { feature } from 'bun:bundle';
+import { feature } from '../../../shims/bun-bundle.js';
 
 // Conditional require so ChannelsNotice.tsx tree-shakes when both flags are
 // false. A module-scope helper component inside a feature() ternary does NOT
@@ -189,7 +189,7 @@ export function LogoV2() {
       t12 = <VoiceModeNotice />;
       t13 = <Opus1mMergeNotice />;
       t14 = ChannelsNoticeModule && <ChannelsNoticeModule.ChannelsNotice />;
-      t15 = isDebugMode() && <Box paddingLeft={2} flexDirection="column"><Text color="warning">Debug mode enabled</Text><Text dimColor={true}>Logging to: {isDebugToStdErr() ? "stderr" : getDebugLogPath()}</Text></Box>;
+      t15 = isDebugMode() && <Box paddingLeft={2} flexDirection="column"><Text color="warning">调试模式已启用</Text><Text dimColor={true}>日志输出至: {isDebugToStdErr() ? "stderr" : getDebugLogPath()}</Text></Box>;
       t16 = <EmergencyTip />;
       t17 = process.env.CLAUDE_CODE_TMUX_SESSION && <Box paddingLeft={2} flexDirection="column"><Text dimColor={true}>tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}</Text><Text dimColor={true}>{process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})` : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}</Text></Box>;
       $[15] = t11;
@@ -309,7 +309,7 @@ export function LogoV2() {
     }
     let t17;
     if ($[40] !== showSandboxStatus) {
-      t17 = showSandboxStatus && <Box marginTop={1} flexDirection="column"><Text color="warning">Your bash commands will be sandboxed. Disable with /sandbox.</Text></Box>;
+      t17 = showSandboxStatus && <Box marginTop={1} flexDirection="column"><Text color="warning">你的 Bash 命令将在沙箱中运行。使用 /sandbox 禁用。</Text></Box>;
       $[40] = showSandboxStatus;
       $[41] = t17;
     } else {
@@ -460,7 +460,7 @@ export function LogoV2() {
     t29 = <VoiceModeNotice />;
     t30 = <Opus1mMergeNotice />;
     t31 = ChannelsNoticeModule && <ChannelsNoticeModule.ChannelsNotice />;
-    t32 = isDebugMode() && <Box paddingLeft={2} flexDirection="column"><Text color="warning">Debug mode enabled</Text><Text dimColor={true}>Logging to: {isDebugToStdErr() ? "stderr" : getDebugLogPath()}</Text></Box>;
+    t32 = isDebugMode() && <Box paddingLeft={2} flexDirection="column"><Text color="warning">调试模式已启用</Text><Text dimColor={true}>日志输出至: {isDebugToStdErr() ? "stderr" : getDebugLogPath()}</Text></Box>;
     t33 = <EmergencyTip />;
     t34 = process.env.CLAUDE_CODE_TMUX_SESSION && <Box paddingLeft={2} flexDirection="column"><Text dimColor={true}>tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}</Text><Text dimColor={true}>{process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})` : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}</Text></Box>;
     $[75] = t29;
@@ -488,7 +488,7 @@ export function LogoV2() {
   }
   let t36;
   if ($[84] !== showSandboxStatus) {
-    t36 = showSandboxStatus && <Box paddingLeft={2} flexDirection="column"><Text color="warning">Your bash commands will be sandboxed. Disable with /sandbox.</Text></Box>;
+    t36 = showSandboxStatus && <Box paddingLeft={2} flexDirection="column"><Text color="warning">你的 Bash 命令将在沙箱中运行。使用 /sandbox 禁用。</Text></Box>;
     $[84] = showSandboxStatus;
     $[85] = t36;
   } else {

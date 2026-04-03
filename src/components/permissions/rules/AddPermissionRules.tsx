@@ -19,19 +19,19 @@ export function optionForPermissionSaveDestination(saveDestination: EditableSett
   switch (saveDestination) {
     case 'localSettings':
       return {
-        label: 'Project settings (local)',
+        label: '项目设置（本地）',
         description: `Saved in ${getRelativeSettingsFilePathForSource('localSettings')}`,
         value: saveDestination
       };
     case 'projectSettings':
       return {
-        label: 'Project settings',
+        label: '项目设置',
         description: `Checked in at ${getRelativeSettingsFilePathForSource('projectSettings')}`,
         value: saveDestination
       };
     case 'userSettings':
       return {
-        label: 'User settings',
+        label: '用户设置',
         description: `Saved in at ~/.claude/settings.json`,
         value: saveDestination
       };

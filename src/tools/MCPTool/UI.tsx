@@ -1,5 +1,5 @@
 import { c as _c } from "react/compiler-runtime";
-import { feature } from 'bun:bundle';
+import { feature } from '../../../shims/bun-bundle.js';
 import figures from 'figures';
 import * as React from 'react';
 import type { z } from 'zod/v4';
@@ -7,6 +7,7 @@ import { ProgressBar } from '../../components/design-system/ProgressBar.js';
 import { MessageResponse } from '../../components/MessageResponse.js';
 import { linkifyUrlsInText, OutputLine } from '../../components/shell/OutputLine.js';
 import { stringWidth } from '../../ink/stringWidth.js';
+import { padEndVisual } from '../../utils/cjkAlign.js';
 import { Ansi, Box, Text } from '../../ink.js';
 import type { ToolProgressData } from '../../Tool.js';
 import type { ProgressMessage } from '../../types/message.js';
@@ -211,7 +212,7 @@ function MCPTextOutput(t0) {
         if ($[11] !== maxKeyWidth) {
           t3 = (t4, i) => {
             const [key, value] = t4;
-            return <Text key={i}><Text dimColor={true}>{key.padEnd(maxKeyWidth)}: </Text><Ansi>{linkifyUrlsInText(value)}</Ansi></Text>;
+            return <Text key={i}><Text dimColor={true}>{padEndVisual(key, maxKeyWidth)}: </Text><Ansi>{linkifyUrlsInText(value)}</Ansi></Text>;
           };
           $[11] = maxKeyWidth;
           $[12] = t3;

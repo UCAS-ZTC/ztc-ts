@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../shims/bun-bundle.js'
 import { open } from 'fs/promises'
 import { basename, dirname, join, sep } from 'path'
 import type { ModelUsage } from 'src/entrypoints/agentSdkTypes.js'

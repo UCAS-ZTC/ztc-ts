@@ -74,7 +74,7 @@ export function getFilePermissionOptions({
   if (yesInputMode && onAcceptFeedbackChange) {
     options.push({
       type: 'input',
-      label: 'Yes',
+      label: '是',
       value: 'yes',
       placeholder: 'and tell Claude what to do next',
       onChange: onAcceptFeedbackChange,
@@ -85,7 +85,7 @@ export function getFilePermissionOptions({
     });
   } else {
     options.push({
-      label: 'Yes',
+      label: '是',
       value: 'yes',
       option: {
         type: 'accept-once'
@@ -153,7 +153,7 @@ export function getFilePermissionOptions({
   if (noInputMode && onRejectFeedbackChange) {
     options.push({
       type: 'input',
-      label: 'No',
+      label: '否',
       value: 'no',
       placeholder: 'and tell Claude what to do differently',
       onChange: onRejectFeedbackChange,
@@ -165,7 +165,7 @@ export function getFilePermissionOptions({
   } else {
     // Not in input mode - simple option
     options.push({
-      label: 'No',
+      label: '否',
       value: 'no',
       option: {
         type: 'reject'

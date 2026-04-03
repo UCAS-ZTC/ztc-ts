@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle';
+import { feature } from '../../../../shims/bun-bundle.js';
 import type { UUID } from 'crypto';
 import figures from 'figures';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -208,7 +208,7 @@ export function ExitPlanModePermissionRequest({
   const [currentPlan, setCurrentPlan] = useState(() => {
     if (inputPlan) return inputPlan;
     const plan = getPlan();
-    return plan ?? 'No plan found. Please write your plan to the plan file first.';
+    return plan ?? '未找到计划。请先将计划写入计划文件。';
   });
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   // Track Ctrl+G local edits so updatedInput can include the plan (the tool

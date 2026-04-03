@@ -4,7 +4,7 @@ import { Box, Text } from '../ink.js';
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { computeGlimmerIndex, computeShimmerSegments, SHIMMER_INTERVAL_MS } from '../bridge/bridgeStatusUtil.js';
-import { feature } from 'bun:bundle';
+import { feature } from '../../shims/bun-bundle.js';
 import { getKairosActive, getUserMsgOptIn } from '../bootstrap/state.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../services/analytics/growthbook.js';
 import { isEnvTruthy } from '../utils/envUtils.js';
@@ -230,22 +230,22 @@ function SpinnerWithVerbInner({
     return <Box flexDirection="column" width="100%" alignItems="flex-start">
         <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
           <Text dimColor>
-            {TEARDROP_ASTERISK} Idle
-            {!allIdle && ' · teammates running'}
+            {TEARDROP_ASTERISK} 空闲
+            {!allIdle && ' · 队友运行中'}
           </Text>
         </Box>
-        {showSpinnerTree && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderTokenCount={leaderTokenCount} leaderIdleText="Idle" />}
+        {showSpinnerTree && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderTokenCount={leaderTokenCount} leaderIdleText="空闲" />}
       </Box>;
   }
 
   // When viewing an idle teammate, show static idle display instead of animated spinner
   if (foregroundedTeammate?.isIdle) {
-    const idleText = allIdle ? `${TEARDROP_ASTERISK} Worked for ${formatDuration(Date.now() - foregroundedTeammate.startTime)}` : `${TEARDROP_ASTERISK} Idle`;
+    const idleText = allIdle ? `${TEARDROP_ASTERISK} 已工作 ${formatDuration(Date.now() - foregroundedTeammate.startTime)}` : `${TEARDROP_ASTERISK} 空闲`;
     return <Box flexDirection="column" width="100%" alignItems="flex-start">
         <Box flexDirection="row" flexWrap="wrap" marginTop={1} width="100%">
           <Text dimColor>{idleText}</Text>
         </Box>
-        {showSpinnerTree && hasRunningTeammates && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} />}
+        {showSpinnerTree && hasRunningTeammates && <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? '空闲' : undefined} leaderTokenCount={leaderTokenCount} />}
       </Box>;
   }
 
@@ -256,7 +256,7 @@ function SpinnerWithVerbInner({
   const tipsEnabled = settings.spinnerTipsEnabled !== false;
   const showClearTip = tipsEnabled && elapsedSnapshot > 1_800_000;
   const showBtwTip = tipsEnabled && elapsedSnapshot > 30_000 && !getGlobalConfig().btwUseCount;
-  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? 'Use /clear to start fresh when switching topics and free up context' : showBtwTip && !nextTask ? "Use /btw to ask a quick side question without interrupting Claude's current work" : spinnerTip;
+  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? '切换话题时使用 /clear 清空上下文重新开始' : showBtwTip && !nextTask ? '使用 /btw 在不打断 Claude 当前工作的情况下提问' : spinnerTip;
 
   // Budget text (ant-only) — shown above the tip line
   let budgetText: string | null = null;
@@ -279,7 +279,7 @@ function SpinnerWithVerbInner({
   }
   return <Box flexDirection="column" width="100%" alignItems="flex-start">
       <SpinnerAnimationRow mode={mode} reducedMotion={reducedMotion} hasActiveTools={hasActiveTools} responseLengthRef={responseLengthRef} message={message} messageColor={messageColor} shimmerColor={shimmerColor} overrideColor={overrideColor} loadingStartTimeRef={loadingStartTimeRef} totalPausedMsRef={totalPausedMsRef} pauseStartTimeRef={pauseStartTimeRef} spinnerSuffix={spinnerSuffix} verbose={verbose} columns={columns} hasRunningTeammates={hasRunningTeammates} teammateTokens={teammateTokens} foregroundedTeammate={foregroundedTeammate} leaderIsIdle={leaderIsIdle} thinkingStatus={thinkingStatus} effortSuffix={effortSuffix} />
-      {showSpinnerTree && hasRunningTeammates ? <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? 'Idle' : undefined} leaderTokenCount={leaderTokenCount} /> : showExpandedTodos && tasksV2 && tasksV2.length > 0 ? <Box width="100%" flexDirection="column">
+      {showSpinnerTree && hasRunningTeammates ? <TeammateSpinnerTree selectedIndex={selectedIPAgentIndex} isInSelectionMode={viewSelectionMode === 'selecting-agent'} allIdle={allIdle} leaderVerb={leaderIsIdle ? undefined : leaderVerb} leaderIdleText={leaderIsIdle ? '空闲' : undefined} leaderTokenCount={leaderTokenCount} /> : showExpandedTodos && tasksV2 && tasksV2.length > 0 ? <Box width="100%" flexDirection="column">
           <MessageResponse>
             <TaskListV2 tasks={tasksV2} />
           </MessageResponse>
@@ -293,7 +293,7 @@ function SpinnerWithVerbInner({
             </MessageResponse>}
           {(nextTask || effectiveTip) && <MessageResponse>
               <Text dimColor>
-                {nextTask ? `Next: ${nextTask.subject}` : `Tip: ${effectiveTip}`}
+                {nextTask ? `下一步: ${nextTask.subject}` : `提示: ${effectiveTip}`}
               </Text>
             </MessageResponse>}
         </Box> : null}
@@ -346,7 +346,7 @@ function BriefSpinner(t0) {
   const [, time] = useAnimationFrame(reducedMotion ? null : 120);
   const runningCount = useAppState(_temp6);
   const showConnWarning = connStatus === "reconnecting" || connStatus === "disconnected";
-  const connText = connStatus === "reconnecting" ? "Reconnecting" : "Disconnected";
+  const connText = connStatus === "reconnecting" ? "重连中" : "已断开";
   const dotFrame = Math.floor(time / 300) % 3;
   let t3;
   if ($[3] !== dotFrame || $[4] !== reducedMotion) {
@@ -388,7 +388,7 @@ function BriefSpinner(t0) {
   const {
     columns
   } = useTerminalSize();
-  const rightText = runningCount > 0 ? `${runningCount} in background` : "";
+  const rightText = runningCount > 0 ? `${runningCount} 个后台任务` : "";
   let t6;
   if ($[14] !== connText || $[15] !== showConnWarning || $[16] !== verbWidth) {
     t6 = showConnWarning ? stringWidth(connText) : verbWidth;
@@ -446,7 +446,7 @@ function _temp5(s) {
   return s.remoteConnectionStatus;
 }
 function _temp4() {
-  return sample(getSpinnerVerbs()) ?? "Working";
+  return sample(getSpinnerVerbs()) ?? "处理中";
 }
 export function BriefIdleStatus() {
   const $ = _c(9);
@@ -456,9 +456,9 @@ export function BriefIdleStatus() {
     columns
   } = useTerminalSize();
   const showConnWarning = connStatus === "reconnecting" || connStatus === "disconnected";
-  const connText = connStatus === "reconnecting" ? "Reconnecting\u2026" : "Disconnected";
+  const connText = connStatus === "reconnecting" ? "重连中\u2026" : "已断开";
   const leftText = showConnWarning ? connText : "";
-  const rightText = runningCount > 0 ? `${runningCount} in background` : "";
+  const rightText = runningCount > 0 ? `${runningCount} 个后台任务` : "";
   if (!leftText && !rightText) {
     let t0;
     if ($[0] === Symbol.for("react.memo_cache_sentinel")) {

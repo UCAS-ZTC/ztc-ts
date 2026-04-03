@@ -59,11 +59,11 @@ export function Onboarding({
 
   // Define all onboarding steps
   const themeStep = <Box marginX={1}>
-      <ThemePicker onThemeSelect={handleThemeSelection} showIntroText={true} helpText="To change this later, run /theme" hideEscToCancel={true} skipExitHandling={true} // Skip exit handling as Onboarding already handles it
+      <ThemePicker onThemeSelect={handleThemeSelection} showIntroText={true} helpText="之后可通过 /theme 命令修改" hideEscToCancel={true} skipExitHandling={true} // Skip exit handling as Onboarding already handles it
     />
     </Box>;
   const securityStep = <Box flexDirection="column" gap={1} paddingLeft={1}>
-      <Text bold>Security notes:</Text>
+      <Text bold>安全须知：</Text>
       <Box flexDirection="column" width={70}>
         {/**
          * OrderedList misnumbers items when rendering conditionally,
@@ -71,20 +71,18 @@ export function Onboarding({
          */}
         <OrderedList>
           <OrderedList.Item>
-            <Text>Claude can make mistakes</Text>
+            <Text>Claude 可能会犯错</Text>
             <Text dimColor wrap="wrap">
-              You should always review Claude&apos;s responses, especially when
-              <Newline />
-              running code.
+              请务必审查 Claude 的回复，尤其是在执行代码时。
               <Newline />
             </Text>
           </OrderedList.Item>
           <OrderedList.Item>
             <Text>
-              Due to prompt injection risks, only use it with code you trust
+              由于存在提示注入风险，请仅在可信代码上使用
             </Text>
             <Text dimColor wrap="wrap">
-              For more details see:
+              详情请参阅：
               <Newline />
               <Link url="https://code.claude.com/docs/en/security" />
             </Text>
@@ -146,19 +144,17 @@ export function Onboarding({
     steps.push({
       id: 'terminal-setup',
       component: <Box flexDirection="column" gap={1} paddingLeft={1}>
-          <Text bold>Use Claude Code&apos;s terminal setup?</Text>
+          <Text bold>是否使用 Claude Code 的终端设置？</Text>
           <Box flexDirection="column" width={70} gap={1}>
             <Text>
-              For the optimal coding experience, enable the recommended settings
-              <Newline />
-              for your terminal:{' '}
+              为获得最佳编码体验，请启用推荐的终端设置：{' '}
               {env.terminal === 'Apple_Terminal' ? 'Option+Enter for newlines and visual bell' : 'Shift+Enter for newlines'}
             </Text>
             <Select options={[{
-            label: 'Yes, use recommended settings',
+            label: '是，使用推荐设置',
             value: 'install'
           }, {
-            label: 'No, maybe later with /terminal-setup',
+            label: '否，稍后通过 /terminal-setup 设置',
             value: 'no'
           }]} onChange={value => {
             if (value === 'install') {
@@ -169,7 +165,7 @@ export function Onboarding({
             }
           }} onCancel={() => goToNextStep()} />
             <Text dimColor>
-              {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Enter to confirm · Esc to skip</>}
+              {exitState.pending ? <>再按 {exitState.keyName} 退出</> : <>Enter 确认 · Esc 跳过</>}
             </Text>
           </Box>
         </Box>
@@ -206,7 +202,7 @@ export function Onboarding({
       <Box flexDirection="column" marginTop={1}>
         {currentStep?.component}
         {exitState.pending && <Box padding={1}>
-            <Text dimColor>Press {exitState.keyName} again to exit</Text>
+            <Text dimColor>再按 {exitState.keyName} 退出</Text>
           </Box>}
       </Box>
     </Box>;

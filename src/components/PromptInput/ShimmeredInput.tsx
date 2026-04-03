@@ -110,7 +110,7 @@ export function HighlightedInput(t0) {
     if ($[18] !== glimmerIndex) {
       t4 = (lineParts, lineIndex) => <Box key={lineIndex}>{lineParts.length === 0 ? <Text> </Text> : lineParts.map((part_0, partIndex) => {
           if (part_0.highlight?.shimmerColor && part_0.highlight.color) {
-            return <Text key={partIndex}>{part_0.text.split("").map((char, charIndex) => <ShimmerChar key={charIndex} char={char} index={part_0.start + charIndex} glimmerIndex={glimmerIndex} messageColor={part_0.highlight.color} shimmerColor={part_0.highlight.shimmerColor} />)}</Text>;
+            return <Text key={partIndex}>{[...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(part_0.text)].map(({ segment: char, index: segIdx }, charIndex) => <ShimmerChar key={charIndex} char={char} index={part_0.start + segIdx} glimmerIndex={glimmerIndex} messageColor={part_0.highlight.color} shimmerColor={part_0.highlight.shimmerColor} />)}</Text>;
           }
           return <Text key={partIndex} color={part_0.highlight?.color} dimColor={part_0.highlight?.dimColor} inverse={part_0.highlight?.inverse}><Ansi>{part_0.text}</Ansi></Text>;
         })}</Box>;

@@ -18,10 +18,10 @@ export function createRecentActivityFeed(activities: LogOption[]): FeedConfig {
     };
   });
   return {
-    title: 'Recent activity',
+    title: '近期活动',
     lines,
-    footer: lines.length > 0 ? '/resume for more' : undefined,
-    emptyMessage: 'No recent activity'
+    footer: lines.length > 0 ? '/resume 查看更多' : undefined,
+    emptyMessage: '暂无近期活动'
   };
 }
 export function createWhatsNewFeed(releaseNotes: string[]): FeedConfig {
@@ -39,11 +39,11 @@ export function createWhatsNewFeed(releaseNotes: string[]): FeedConfig {
       text: note
     };
   });
-  const emptyMessage = "external" === 'ant' ? 'Unable to fetch latest claude-cli-internal commits' : 'Check the Claude Code changelog for updates';
+  const emptyMessage = "external" === 'ant' ? 'Unable to fetch latest claude-cli-internal commits' : '查看 Claude Code 更新日志';
   return {
-    title: "external" === 'ant' ? "What's new [ANT-ONLY: Latest CC commits]" : "What's new",
+    title: "external" === 'ant' ? "What's new [ANT-ONLY: Latest CC commits]" : "最新动态",
     lines,
-    footer: lines.length > 0 ? '/release-notes for more' : undefined,
+    footer: lines.length > 0 ? '/release-notes 查看更多' : undefined,
     emptyMessage
   };
 }
@@ -60,14 +60,14 @@ export function createProjectOnboardingFeed(steps: Step[]): FeedConfig {
       text: `${checkmark}${text}`
     };
   });
-  const warningText = getCwd() === homedir() ? 'Note: You have launched claude in your home directory. For the best experience, launch it in a project directory instead.' : undefined;
+  const warningText = getCwd() === homedir() ? '注意：你在主目录下启动了 Claude。为获得最佳体验，请在项目目录中启动。' : undefined;
   if (warningText) {
     lines.push({
       text: warningText
     });
   }
   return {
-    title: 'Tips for getting started',
+    title: '快速入门',
     lines
   };
 }

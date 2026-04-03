@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../shims/bun-bundle.js'
 import { randomBytes } from 'crypto'
 import { open } from 'fs/promises'
 import { join } from 'path'

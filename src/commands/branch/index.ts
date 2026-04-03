@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../../shims/bun-bundle.js'
 import type { Command } from '../../commands.js'
 
 const branch = {
@@ -6,7 +6,7 @@ const branch = {
   name: 'branch',
   // 'fork' alias only when /fork doesn't exist as its own command
   aliases: feature('FORK_SUBAGENT') ? [] : ['fork'],
-  description: 'Create a branch of the current conversation at this point',
+  description: '在当前位置创建对话分支',
   argumentHint: '[name]',
   load: () => import('./branch.js'),
 } satisfies Command

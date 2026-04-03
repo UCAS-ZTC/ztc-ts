@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Local Claude Code launcher
+# Usage: ./claude [args...]
+# Set ANTHROPIC_API_KEY before running, or use /login in interactive mode.
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="${CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:-1}"
+export DISABLE_TELEMETRY="${DISABLE_TELEMETRY:-1}"
+export CLAUDE_CODE_DISABLE_AUTOUPDATER="${CLAUDE_CODE_DISABLE_AUTOUPDATER:-1}"
+
+exec "$HOME/.bun/bin/bun" --preload "$SCRIPT_DIR/shims/preload.ts" "$SCRIPT_DIR/src/entrypoints/cli.tsx" "$@"

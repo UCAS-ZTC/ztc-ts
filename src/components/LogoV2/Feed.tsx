@@ -1,6 +1,7 @@
 import { c as _c } from "react/compiler-runtime";
 import * as React from 'react';
 import { stringWidth } from '../../ink/stringWidth.js';
+import { padEndVisual } from '../../utils/cjkAlign.js';
 import { Box, Text } from '../../ink.js';
 import { truncate } from '../../utils/format.js';
 export type FeedLine = {
@@ -82,7 +83,7 @@ export function Feed(t0) {
   if ($[4] !== actualWidth || $[5] !== customContent || $[6] !== emptyMessage || $[7] !== footer || $[8] !== lines || $[9] !== maxTimestampWidth) {
     t3 = customContent ? <>{customContent.content}{footer && <Text dimColor={true} italic={true}>{truncate(footer, actualWidth)}</Text>}</> : lines.length === 0 && emptyMessage ? <Text dimColor={true}>{truncate(emptyMessage, actualWidth)}</Text> : <>{lines.map((line_0, index) => {
         const textWidth = Math.max(10, actualWidth - (maxTimestampWidth > 0 ? maxTimestampWidth + 2 : 0));
-        return <Text key={index}>{maxTimestampWidth > 0 && <><Text dimColor={true}>{(line_0.timestamp || "").padEnd(maxTimestampWidth)}</Text>{"  "}</>}<Text>{truncate(line_0.text, textWidth)}</Text></Text>;
+        return <Text key={index}>{maxTimestampWidth > 0 && <><Text dimColor={true}>{padEndVisual(line_0.timestamp || "", maxTimestampWidth)}</Text>{"  "}</>}<Text>{truncate(line_0.text, textWidth)}</Text></Text>;
       })}{footer && <Text dimColor={true} italic={true}>{truncate(footer, actualWidth)}</Text>}</>;
     $[4] = actualWidth;
     $[5] = customContent;

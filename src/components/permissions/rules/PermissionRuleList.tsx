@@ -212,10 +212,10 @@ function RuleDetails(t0) {
   let t12;
   if ($[31] === Symbol.for("react.memo_cache_sentinel")) {
     t12 = [{
-      label: "Yes",
+      label: "是",
       value: "yes"
     }, {
-      label: "No",
+      label: "否",
       value: "no"
     }];
     $[31] = t12;
@@ -601,7 +601,7 @@ export function PermissionRuleList(t0) {
       const options = [];
       if (tab !== "workspace" && tab !== "recent" && !query) {
         options.push({
-          label: `Add a new rule${figures.ellipsis}`,
+          label: `添加新规则${figures.ellipsis}`,
           value: "add-new-rule"
         });
       }

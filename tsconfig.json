@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": false,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": false,
+    "baseUrl": ".",
+    "paths": {
+      "#bun-bundle": ["./shims/bun-bundle.ts"],
+      "#bun-ffi": ["./shims/bun-ffi.ts"]
+    },
+    "types": ["bun-types", "@types/react", "@types/node"]
+  },
+  "include": ["src/**/*", "shims/**/*"]
+}

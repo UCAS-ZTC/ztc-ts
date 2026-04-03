@@ -1,7 +1,7 @@
 import type { Command } from '../../commands.js'
 
 const releaseNotes: Command = {
-  description: 'View release notes',
+  description: '查看更新日志',
   name: 'release-notes',
   type: 'local',
   supportsNonInteractive: true,

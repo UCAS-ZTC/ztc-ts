@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../shims/bun-bundle.js'
 import type { Command } from '../commands.js'
 import { maybeMarkProjectOnboardingComplete } from '../projectOnboardingState.js'
 import { isEnvTruthy } from '../utils/envUtils.js'
@@ -230,11 +230,11 @@ const command = {
     return feature('NEW_INIT') &&
       (process.env.USER_TYPE === 'ant' ||
         isEnvTruthy(process.env.CLAUDE_CODE_NEW_INIT))
-      ? 'Initialize new CLAUDE.md file(s) and optional skills/hooks with codebase documentation'
-      : 'Initialize a new CLAUDE.md file with codebase documentation'
+      ? '初始化 CLAUDE.md 文件及可选的技能/钩子（含代码库文档）'
+      : '初始化 CLAUDE.md 项目说明文件'
   },
   contentLength: 0, // Dynamic content
-  progressMessage: 'analyzing your codebase',
+  progressMessage: '正在分析代码库',
   source: 'builtin',
   async getPromptForCommand() {
     maybeMarkProjectOnboardingComplete()

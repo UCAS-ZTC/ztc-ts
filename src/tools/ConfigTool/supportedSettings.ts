@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../../shims/bun-bundle.js'
 import { getRemoteControlAtStartup } from '../../utils/config.js'
 import {
   EDITOR_MODES,

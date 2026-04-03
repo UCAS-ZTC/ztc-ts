@@ -7,6 +7,8 @@ import { useKeybinding } from '../keybindings/useKeybinding.js';
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js';
 import { logForDebugging } from '../utils/debug.js';
 import { detectCurrentRepository } from '../utils/detectRepository.js';
+import { stringWidth } from '../ink/stringWidth.js';
+import { padEndVisual } from '../utils/cjkAlign.js';
 import { formatRelativeTime } from '../utils/format.js';
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js';
 import { Select } from './CustomSelect/index.js';
@@ -157,13 +159,13 @@ export function ResumeTask({
     ...session_0,
     timeString: formatRelativeTime(new Date(session_0.updated_at))
   }));
-  const maxTimeStringLength = Math.max(UPDATED_STRING.length, ...sessionMetadata.map(meta => meta.timeString.length));
+  const maxTimeStringLength = Math.max(stringWidth(UPDATED_STRING), ...sessionMetadata.map(meta => stringWidth(meta.timeString)));
   const options = sessionMetadata.map(({
     timeString,
     title,
     id
   }) => {
-    const paddedTime = timeString.padEnd(maxTimeStringLength, ' ');
+    const paddedTime = padEndVisual(timeString, maxTimeStringLength);
 
     // TODO: include branch name when API returns it
     return {

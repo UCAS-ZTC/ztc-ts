@@ -1,4 +1,4 @@
-import { feature } from 'bun:bundle'
+import { feature } from '../../../shims/bun-bundle.js'
 import { logEvent } from '../../services/analytics/index.js'
 import { logForDebugging } from '../debug.js'
 import {

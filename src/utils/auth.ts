@@ -253,8 +253,16 @@ export function getAnthropicApiKeyWithSource(
     ? undefined
     : process.env.ANTHROPIC_API_KEY
 
-  // Always check for direct environment variable when the user ran claude --print.
-  // This is useful for CI, etc.
+  // Local build: when using a third-party proxy, always accept the env API key
+  const isThirdPartyProxy = process.env.ANTHROPIC_BASE_URL &&
+    !process.env.ANTHROPIC_BASE_URL.includes('anthropic.com')
+  if (apiKeyEnv && isThirdPartyProxy) {
+    return {
+      key: apiKeyEnv,
+      source: 'ANTHROPIC_API_KEY',
+    }
+  }
+
   if (preferThirdPartyAuthentication() && apiKeyEnv) {
     return {
       key: apiKeyEnv,

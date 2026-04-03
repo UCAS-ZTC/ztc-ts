@@ -4,7 +4,7 @@ const status = {
   type: 'local-jsx',
   name: 'status',
   description:
-    'Show Claude Code status including version, model, account, API connectivity, and tool statuses',
+    '显示 Claude Code 状态（版本、模型、账户、API 连通性和工具状态）',
   immediate: true,
   load: () => import('./status.js'),
 } satisfies Command
