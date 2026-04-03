@@ -11,7 +11,8 @@
     "compile": "bun run ./scripts/build.ts --compile",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "verify": "bun run build:dev && bun test"
+    "smoke": "bun --preload ./shims/preload.ts src/entrypoints/cli.tsx --version && ANTHROPIC_API_KEY=sk-ant-smoke ./start.sh --version >/dev/null",
+    "verify": "bun run build:dev && bun test && bun run smoke"
   },
   "dependencies": {
     "@alcalzone/ansi-tokenize": "^0.3.0",
