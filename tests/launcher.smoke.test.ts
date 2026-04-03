@@ -81,8 +81,28 @@ describe('launchers smoke', () => {
 
     expect(proc.exitCode).toBe(0)
     expect(stderr).toBe('')
-    expect(stdout).toContain('normalized ANTHROPIC_BASE_URL -> https://example-proxy.test')
+    expect(stdout).toContain('已规范化 ANTHROPIC_BASE_URL -> https://example-proxy.test')
     expect(stdout).toContain('代理地址: https://example-proxy.test')
     expect(stdout).not.toContain('代理地址: https://example-proxy.test/v1')
+  })
+
+  test('cli help prefers Chinese text when locale is zh-CN', () => {
+    const proc = Bun.spawnSync(['bash', '-lc', 'CLAUDE_CODE_LOCALE=zh-CN ./start.sh --help'], {
+      cwd,
+      env: {
+        ...process.env,
+        ANTHROPIC_API_KEY: 'sk-ant-smoke',
+      },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    const stdout = new TextDecoder().decode(proc.stdout)
+    const stderr = new TextDecoder().decode(proc.stderr)
+
+    expect(proc.exitCode).toBe(0)
+    expect(stderr).toBe('')
+    expect(stdout).toContain('你的提示词')
+    expect(stdout).toContain('显示命令帮助')
   })
 })

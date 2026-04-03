@@ -30,4 +30,11 @@ describe('package scripts', () => {
     expect(startScript).toContain("grep -Eqi 'utf-?8'")
     expect(startScript).toContain('C.UTF-8')
   })
+
+  test('start.sh defaults UI locale to Chinese', () => {
+    const startScript = readFileSync('/root/project/CC/claude-code-ts/start.sh', 'utf8')
+
+    expect(startScript).toContain('CLAUDE_CODE_LOCALE')
+    expect(startScript).toContain('zh-CN')
+  })
 })

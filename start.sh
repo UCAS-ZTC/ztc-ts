@@ -17,6 +17,7 @@ DIR="$(cd "$(dirname "$SCRIPT")" && pwd)"
 cd "$DIR"
 
 export PATH="$HOME/.bun/bin:$PATH"
+export CLAUDE_CODE_LOCALE="${CLAUDE_CODE_LOCALE:-zh-CN}"
 
 contains_arg() {
   local target="$1"
@@ -68,7 +69,7 @@ LOCALE_PROBE="${LC_ALL:-${LC_CTYPE:-${LANG:-}}}"
 if ! printf '%s' "$LOCALE_PROBE" | grep -Eqi 'utf-?8'; then
   export LANG="${LANG:-C.UTF-8}"
   export LC_ALL="${LC_ALL:-C.UTF-8}"
-  echo "Notice: non-UTF8 locale detected; forcing LANG/LC_ALL to C.UTF-8 for stable CJK display."
+  echo "提示：检测到非 UTF-8 语言环境，已强制设置 LANG/LC_ALL 为 C.UTF-8 以保证中文显示稳定。"
 fi
 
 # ─── Normalize API base URL (strip trailing /v1) ──────────────────────────
@@ -76,13 +77,13 @@ if [ -n "${ANTHROPIC_BASE_URL:-}" ]; then
   NORMALIZED_BASE_URL="$(printf '%s' "${ANTHROPIC_BASE_URL:-}" | sed -E 's#/v1/?$##')"
   if [ "$NORMALIZED_BASE_URL" != "${ANTHROPIC_BASE_URL:-}" ]; then
     export ANTHROPIC_BASE_URL="$NORMALIZED_BASE_URL"
-    echo "Notice: normalized ANTHROPIC_BASE_URL -> ${ANTHROPIC_BASE_URL:-}"
+    echo "提示：已规范化 ANTHROPIC_BASE_URL -> ${ANTHROPIC_BASE_URL:-}"
   fi
 fi
 
 # ─── Check Bun ────────────────────────────────────────────────────────
 if ! command -v bun &>/dev/null; then
-  echo "Error: Bun runtime not found."
+  echo "错误：未找到 Bun 运行时。"
   echo ""
   echo "  curl -fsSL https://bun.sh/install | bash"
   echo ""
@@ -91,16 +92,16 @@ fi
 
 # ─── Check dependencies ──────────────────────────────────────────────
 if [ ! -d "node_modules/@anthropic-ai/sdk" ]; then
-  echo "First run: installing dependencies (with retry)..."
+  echo "首次运行：正在安装依赖（含重试）..."
   ATTEMPT=1
   until bun install; do
     if [ "$ATTEMPT" -ge 3 ]; then
-      echo "Error: dependency installation failed after 3 attempts."
+      echo "错误：依赖安装重试 3 次后仍失败。"
       exit 1
     fi
     ATTEMPT=$((ATTEMPT + 1))
     SLEEP_SECONDS=$((ATTEMPT * 2))
-    echo "Retrying bun install in ${SLEEP_SECONDS}s (attempt ${ATTEMPT}/3)..."
+    echo "${SLEEP_SECONDS} 秒后重试 bun install（第 ${ATTEMPT}/3 次）..."
     sleep "$SLEEP_SECONDS"
   done
   echo ""
@@ -111,8 +112,8 @@ if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
   if contains_arg "--help" "$@" || contains_arg "-h" "$@" || contains_arg "--version" "$@" || contains_arg "-v" "$@" || contains_arg "-V" "$@"; then
     :
   else
-    echo "Warning: ANTHROPIC_API_KEY is not set."
-    echo "         Continue startup and rely on OAuth login or other auth providers."
+    echo "警告：未设置 ANTHROPIC_API_KEY。"
+    echo "      将继续启动，并依赖 OAuth 登录或其他认证方式。"
     echo ""
   fi
 fi

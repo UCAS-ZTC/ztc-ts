@@ -112,6 +112,7 @@ bun run compile     # 生成 ./dist/cli
 | `ANTHROPIC_API_KEY` | API 密钥 | - |
 | `ANTHROPIC_BASE_URL` | API 基础 URL（不含 `/v1`） | `https://api.anthropic.com` |
 | `ANTHROPIC_MODEL` | 默认模型 | `claude-sonnet-4-6` |
+| `CLAUDE_CODE_LOCALE` | CLI 界面语言（如 `zh-CN`、`en-US`） | `zh-CN` |
 | `DISABLE_PROMPT_CACHING` | 禁用 prompt 缓存 | `0` |
 | `DISABLE_INTERLEAVED_THINKING` | 禁用交错思考 | `0` |
 | `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` | 禁用实验 beta 头 | `0` |

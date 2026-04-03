@@ -26,13 +26,14 @@ import { getPackageManager } from 'src/utils/nativeInstaller/packageManagers.js'
 import { writeToStdout } from 'src/utils/process.js'
 import { gte } from 'src/utils/semver.js'
 import { getInitialSettings } from 'src/utils/settings/settings.js'
+import { uiText } from 'src/utils/uiLocale.js'
 
 export async function update() {
   logEvent('tengu_update_check', {})
-  writeToStdout(`Current version: ${MACRO.VERSION}\n`)
+  writeToStdout(`${uiText('Current version', '当前版本')}: ${MACRO.VERSION}\n`)
 
   const channel = getInitialSettings()?.autoUpdatesChannel ?? 'latest'
-  writeToStdout(`Checking for updates to ${channel} version...\n`)
+  writeToStdout(`${uiText('Checking for updates to', '正在检查更新通道')} ${channel} ${uiText('version', '版本')}...\n`)
 
   logForDebugging('update: Starting update check')
 
@@ -47,7 +48,7 @@ export async function update() {
   // Check for multiple installations
   if (diagnostic.multipleInstallations.length > 1) {
     writeToStdout('\n')
-    writeToStdout(chalk.yellow('Warning: Multiple installations found') + '\n')
+    writeToStdout(chalk.yellow(uiText('Warning: Multiple installations found', '警告：检测到多个安装来源')) + '\n')
     for (const install of diagnostic.multipleInstallations) {
       const current =
         diagnostic.installationType === install.type
@@ -67,9 +68,9 @@ export async function update() {
       // The user needs to know that 'which claude' points elsewhere
       logForDebugging(`update: Showing warning: ${warning.issue}`)
 
-      writeToStdout(chalk.yellow(`Warning: ${warning.issue}\n`))
+      writeToStdout(chalk.yellow(`${uiText('Warning', '警告')}: ${warning.issue}\n`))
 
-      writeToStdout(chalk.bold(`Fix: ${warning.fix}\n`))
+      writeToStdout(chalk.bold(`${uiText('Fix', '修复建议')}: ${warning.fix}\n`))
     }
   }
 
@@ -80,7 +81,7 @@ export async function update() {
     diagnostic.installationType !== 'package-manager'
   ) {
     writeToStdout('\n')
-    writeToStdout('Updating configuration to track installation method...\n')
+    writeToStdout(`${uiText('Updating configuration to track installation method', '正在更新配置以记录安装方式')}...\n`)
     let detectedMethod: 'local' | 'native' | 'global' | 'unknown' = 'unknown'
 
     // Map diagnostic installation type to config install method
@@ -102,14 +103,14 @@ export async function update() {
       ...current,
       installMethod: detectedMethod,
     }))
-    writeToStdout(`Installation method set to: ${detectedMethod}\n`)
+    writeToStdout(`${uiText('Installation method set to', '安装方式已设置为')}: ${detectedMethod}\n`)
   }
 
   // Check if running from development build
   if (diagnostic.installationType === 'development') {
     writeToStdout('\n')
     writeToStdout(
-      chalk.yellow('Warning: Cannot update development build') + '\n',
+      chalk.yellow(uiText('Warning: Cannot update development build', '警告：开发版本不支持自动更新')) + '\n',
     )
     await gracefulShutdown(1)
   }
@@ -120,46 +121,46 @@ export async function update() {
     writeToStdout('\n')
 
     if (packageManager === 'homebrew') {
-      writeToStdout('Claude is managed by Homebrew.\n')
+      writeToStdout(uiText('Claude is managed by Homebrew.\n', '当前 Claude 由 Homebrew 管理。\n'))
       const latest = await getLatestVersion(channel)
       if (latest && !gte(MACRO.VERSION, latest)) {
-        writeToStdout(`Update available: ${MACRO.VERSION} → ${latest}\n`)
+        writeToStdout(`${uiText('Update available', '发现可更新版本')}: ${MACRO.VERSION} → ${latest}\n`)
         writeToStdout('\n')
-        writeToStdout('To update, run:\n')
+        writeToStdout(`${uiText('To update, run', '请执行以下命令更新')}:\n`)
         writeToStdout(chalk.bold('  brew upgrade claude-code') + '\n')
       } else {
-        writeToStdout('Claude is up to date!\n')
+        writeToStdout(uiText('Claude is up to date!\n', 'Claude 已是最新版本！\n'))
       }
     } else if (packageManager === 'winget') {
-      writeToStdout('Claude is managed by winget.\n')
+      writeToStdout(uiText('Claude is managed by winget.\n', '当前 Claude 由 winget 管理。\n'))
       const latest = await getLatestVersion(channel)
       if (latest && !gte(MACRO.VERSION, latest)) {
-        writeToStdout(`Update available: ${MACRO.VERSION} → ${latest}\n`)
+        writeToStdout(`${uiText('Update available', '发现可更新版本')}: ${MACRO.VERSION} → ${latest}\n`)
         writeToStdout('\n')
-        writeToStdout('To update, run:\n')
+        writeToStdout(`${uiText('To update, run', '请执行以下命令更新')}:\n`)
         writeToStdout(
           chalk.bold('  winget upgrade Anthropic.ClaudeCode') + '\n',
         )
       } else {
-        writeToStdout('Claude is up to date!\n')
+        writeToStdout(uiText('Claude is up to date!\n', 'Claude 已是最新版本！\n'))
       }
     } else if (packageManager === 'apk') {
-      writeToStdout('Claude is managed by apk.\n')
+      writeToStdout(uiText('Claude is managed by apk.\n', '当前 Claude 由 apk 管理。\n'))
       const latest = await getLatestVersion(channel)
       if (latest && !gte(MACRO.VERSION, latest)) {
-        writeToStdout(`Update available: ${MACRO.VERSION} → ${latest}\n`)
+        writeToStdout(`${uiText('Update available', '发现可更新版本')}: ${MACRO.VERSION} → ${latest}\n`)
         writeToStdout('\n')
-        writeToStdout('To update, run:\n')
+        writeToStdout(`${uiText('To update, run', '请执行以下命令更新')}:\n`)
         writeToStdout(chalk.bold('  apk upgrade claude-code') + '\n')
       } else {
-        writeToStdout('Claude is up to date!\n')
+        writeToStdout(uiText('Claude is up to date!\n', 'Claude 已是最新版本！\n'))
       }
     } else {
       // pacman, deb, and rpm don't get specific commands because they each have
       // multiple frontends (pacman: yay/paru/makepkg, deb: apt/apt-get/aptitude/nala,
       // rpm: dnf/yum/zypper)
-      writeToStdout('Claude is managed by a package manager.\n')
-      writeToStdout('Please use your package manager to update.\n')
+      writeToStdout(uiText('Claude is managed by a package manager.\n', '当前 Claude 由系统包管理器管理。\n'))
+      writeToStdout(uiText('Please use your package manager to update.\n', '请使用对应包管理器执行更新。\n'))
     }
 
     await gracefulShutdown(0)
