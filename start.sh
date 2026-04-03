@@ -18,11 +18,66 @@ cd "$DIR"
 
 export PATH="$HOME/.bun/bin:$PATH"
 
+contains_arg() {
+  local target="$1"
+  shift || true
+  for arg in "$@"; do
+    if [ "$arg" = "$target" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # ─── Load .env if present ─────────────────────────────────────────────
+# Keep shell-provided values authoritative; .env should only provide defaults.
+HAS_ANTHROPIC_API_KEY=0
+HAS_ANTHROPIC_BASE_URL=0
+HAS_ANTHROPIC_MODEL=0
+if [ "${ANTHROPIC_API_KEY+x}" = x ]; then
+  HAS_ANTHROPIC_API_KEY=1
+  PRESERVED_ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
+fi
+if [ "${ANTHROPIC_BASE_URL+x}" = x ]; then
+  HAS_ANTHROPIC_BASE_URL=1
+  PRESERVED_ANTHROPIC_BASE_URL="$ANTHROPIC_BASE_URL"
+fi
+if [ "${ANTHROPIC_MODEL+x}" = x ]; then
+  HAS_ANTHROPIC_MODEL=1
+  PRESERVED_ANTHROPIC_MODEL="$ANTHROPIC_MODEL"
+fi
+
 if [ -f "$DIR/.env" ]; then
   set -a
   source "$DIR/.env"
   set +a
+fi
+
+if [ "$HAS_ANTHROPIC_API_KEY" -eq 1 ]; then
+  export ANTHROPIC_API_KEY="$PRESERVED_ANTHROPIC_API_KEY"
+fi
+if [ "$HAS_ANTHROPIC_BASE_URL" -eq 1 ]; then
+  export ANTHROPIC_BASE_URL="$PRESERVED_ANTHROPIC_BASE_URL"
+fi
+if [ "$HAS_ANTHROPIC_MODEL" -eq 1 ]; then
+  export ANTHROPIC_MODEL="$PRESERVED_ANTHROPIC_MODEL"
+fi
+
+# ─── Enforce UTF-8 locale for CJK rendering stability ─────────────────────
+LOCALE_PROBE="${LC_ALL:-${LC_CTYPE:-${LANG:-}}}"
+if ! printf '%s' "$LOCALE_PROBE" | grep -Eqi 'utf-?8'; then
+  export LANG="${LANG:-C.UTF-8}"
+  export LC_ALL="${LC_ALL:-C.UTF-8}"
+  echo "Notice: non-UTF8 locale detected; forcing LANG/LC_ALL to C.UTF-8 for stable CJK display."
+fi
+
+# ─── Normalize API base URL (strip trailing /v1) ──────────────────────────
+if [ -n "${ANTHROPIC_BASE_URL:-}" ]; then
+  NORMALIZED_BASE_URL="$(printf '%s' "${ANTHROPIC_BASE_URL:-}" | sed -E 's#/v1/?$##')"
+  if [ "$NORMALIZED_BASE_URL" != "${ANTHROPIC_BASE_URL:-}" ]; then
+    export ANTHROPIC_BASE_URL="$NORMALIZED_BASE_URL"
+    echo "Notice: normalized ANTHROPIC_BASE_URL -> ${ANTHROPIC_BASE_URL:-}"
+  fi
 fi
 
 # ─── Check Bun ────────────────────────────────────────────────────────
@@ -36,23 +91,30 @@ fi
 
 # ─── Check dependencies ──────────────────────────────────────────────
 if [ ! -d "node_modules/@anthropic-ai/sdk" ]; then
-  echo "First run: installing dependencies..."
-  bun install
+  echo "First run: installing dependencies (with retry)..."
+  ATTEMPT=1
+  until bun install; do
+    if [ "$ATTEMPT" -ge 3 ]; then
+      echo "Error: dependency installation failed after 3 attempts."
+      exit 1
+    fi
+    ATTEMPT=$((ATTEMPT + 1))
+    SLEEP_SECONDS=$((ATTEMPT * 2))
+    echo "Retrying bun install in ${SLEEP_SECONDS}s (attempt ${ATTEMPT}/3)..."
+    sleep "$SLEEP_SECONDS"
+  done
   echo ""
 fi
 
 # ─── Check API key ───────────────────────────────────────────────────
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "Error: ANTHROPIC_API_KEY is not set."
-  echo ""
-  echo "  export ANTHROPIC_API_KEY=\"sk-ant-xxx\""
-  echo ""
-  echo "Or for third-party proxies:"
-  echo ""
-  echo "  export ANTHROPIC_BASE_URL=\"https://your-proxy.com\""
-  echo "  export ANTHROPIC_API_KEY=\"your-key\""
-  echo ""
-  exit 1
+  if contains_arg "--help" "$@" || contains_arg "-h" "$@" || contains_arg "--version" "$@" || contains_arg "-v" "$@" || contains_arg "-V" "$@"; then
+    :
+  else
+    echo "Warning: ANTHROPIC_API_KEY is not set."
+    echo "         Continue startup and rely on OAuth login or other auth providers."
+    echo ""
+  fi
 fi
 
 # ─── Auto-detect third-party proxy ───────────────────────────────────

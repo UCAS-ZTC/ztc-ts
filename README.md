@@ -44,6 +44,8 @@ export ANTHROPIC_API_KEY="your-key"
 ./start.sh
 ```
 
+`start.sh` 会自动规范化 `ANTHROPIC_BASE_URL`（如果你误填了末尾 `/v1` 会自动移除）。
+
 如需手动控制：
 
 ```bash

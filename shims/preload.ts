@@ -14,3 +14,5 @@ process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC ??= '1'
 process.env.DISABLE_TELEMETRY ??= '1'
 process.env.CLAUDE_CODE_DISABLE_AUTOUPDATER ??= '1'
 process.env.CLAUDE_CODE_VERIFY_PLAN ??= 'false'
+
+export {}

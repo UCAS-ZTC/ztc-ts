@@ -15,4 +15,19 @@ describe('package scripts', () => {
     expect(startScript).toContain('${ANTHROPIC_MODEL:-}')
     expect(startScript).toContain('${ANTHROPIC_API_KEY:-}')
   })
+
+  test('start.sh keeps shell env values authoritative over .env defaults', () => {
+    const startScript = readFileSync('/root/project/CC/claude-code-ts/start.sh', 'utf8')
+
+    expect(startScript).toContain('HAS_ANTHROPIC_API_KEY')
+    expect(startScript).toContain('PRESERVED_ANTHROPIC_BASE_URL')
+    expect(startScript).toContain('PRESERVED_ANTHROPIC_MODEL')
+  })
+
+  test('start.sh enforces UTF-8 locale fallback for CJK safety', () => {
+    const startScript = readFileSync('/root/project/CC/claude-code-ts/start.sh', 'utf8')
+
+    expect(startScript).toContain("grep -Eqi 'utf-?8'")
+    expect(startScript).toContain('C.UTF-8')
+  })
 })
