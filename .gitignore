@@ -4,3 +4,7 @@ node_modules/
 bun.lockb
 dist/
 *.log
+.env
+.temp_test.txt
+.vscode/
+cli-dev

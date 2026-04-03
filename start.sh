@@ -9,7 +9,7 @@
 #   ./start.sh --model claude-sonnet-4-6  # Specify model
 #
 
-set -e
+set -euo pipefail
 
 SCRIPT="$0"
 [ -L "$SCRIPT" ] && SCRIPT="$(readlink -f "$SCRIPT")"
@@ -76,8 +76,7 @@ fi
 echo "┌─────────────────────────────────────────────┐"
 echo "│  Claude Code Local v2.1.89                   │"
 echo "├─────────────────────────────────────────────┤"
-KEY_DISPLAY="${ANTHROPIC_API_KEY:0:8}...${ANTHROPIC_API_KEY: -4}"
-echo "│  API 密钥: $KEY_DISPLAY"
+echo "│  API 密钥: 已配置"
 if [ -n "$ANTHROPIC_BASE_URL" ]; then
   echo "│  代理地址: $ANTHROPIC_BASE_URL"
 fi

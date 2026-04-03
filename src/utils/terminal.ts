@@ -60,6 +60,32 @@ function wrapText(
   }
 }
 
+function countWrappedRows(text: string, wrapWidth: number): number {
+  if (!text) return 0
+
+  let rows = 0
+  for (const line of text.split('\n')) {
+    const visibleWidth = stringWidth(line)
+    rows += Math.max(1, Math.ceil(visibleWidth / wrapWidth))
+  }
+  return rows
+}
+
+function estimateRemainingLinesFromSample(
+  fullContent: string,
+  sampledContent: string,
+  wrapWidth: number,
+): number {
+  if (!sampledContent) return 0
+
+  const sampledRows = countWrappedRows(sampledContent, wrapWidth)
+  if (sampledRows === 0) return 0
+
+  const rowsPerChar = sampledRows / sampledContent.length
+  const estimatedTotalRows = Math.ceil(fullContent.length * rowsPerChar)
+  return Math.max(0, estimatedTotalRows - MAX_LINES_TO_SHOW)
+}
+
 /**
  * Renders the content with line-based truncation for terminal display.
  * If the content exceeds the maximum number of lines, it truncates the content
@@ -96,7 +122,11 @@ export function renderTruncatedContent(
   const estimatedRemaining = preTruncated
     ? Math.max(
         remainingLines,
-        Math.ceil(trimmedContent.length / wrapWidth) - MAX_LINES_TO_SHOW,
+        estimateRemainingLinesFromSample(
+          trimmedContent,
+          contentForWrapping,
+          wrapWidth,
+        ),
       )
     : remainingLines
 

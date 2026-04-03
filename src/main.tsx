@@ -598,11 +598,11 @@ export async function main() {
   process.on('SIGINT', () => {
     // In print mode, print.ts registers its own SIGINT handler that aborts
     // the in-flight query and calls gracefulShutdown; skip here to avoid
-    // preempting it with a synchronous process.exit().
+    // preempting it with a duplicate shutdown path.
     if (process.argv.includes('-p') || process.argv.includes('--print')) {
       return;
     }
-    process.exit(0);
+    gracefulShutdownSync(0);
   });
   profileCheckpoint('main_warning_handler_initialized');
 
