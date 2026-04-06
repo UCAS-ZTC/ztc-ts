@@ -3,7 +3,7 @@ import { createMovedToPluginCommand } from '../createMovedToPluginCommand.js'
 export default createMovedToPluginCommand({
   name: 'pr-comments',
   description: '获取 GitHub PR 的评论',
-  progressMessage: 'fetching PR comments',
+  progressMessage: '正在获取 PR 评论',
   pluginName: 'pr-comments',
   pluginCommand: 'pr-comments',
   async getPromptWhileMarketplaceIsPrivate(args) {

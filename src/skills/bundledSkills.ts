@@ -93,7 +93,7 @@ export function registerBundledSkill(definition: BundledSkillDefinition): void {
     agent: definition.agent,
     isEnabled: definition.isEnabled,
     isHidden: !(definition.userInvocable ?? true),
-    progressMessage: 'running',
+    progressMessage: '运行中',
     getPromptForCommand,
   }
   bundledSkills.push(command)

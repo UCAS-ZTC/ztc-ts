@@ -14,10 +14,10 @@ export function registerDebugSkill(): void {
     name: 'debug',
     description:
       process.env.USER_TYPE === 'ant'
-        ? 'Debug your current Claude Code session by reading the session debug log. Includes all event logging'
-        : 'Enable debug logging for this session and help diagnose issues',
+        ? '通过读取会话调试日志来调试当前 Claude Code 会话，包含所有事件日志'
+        : '为当前会话启用调试日志并帮助诊断问题',
     allowedTools: ['Read', 'Grep', 'Glob'],
-    argumentHint: '[issue description]',
+    argumentHint: '[问题描述]',
     // disableModelInvocation so that the user has to explicitly request it in
     // interactive mode and so the description does not take up context.
     disableModelInvocation: true,

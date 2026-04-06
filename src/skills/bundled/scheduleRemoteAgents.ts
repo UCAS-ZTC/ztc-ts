@@ -325,7 +325,7 @@ export function registerScheduleRemoteAgentsSkill(): void {
   registerBundledSkill({
     name: 'schedule',
     description:
-      'Create, update, list, or run scheduled remote agents (triggers) that execute on a cron schedule.',
+      '创建、更新、列出或运行按 cron 计划执行的远程 agent（触发器）。',
     whenToUse:
       'When the user wants to schedule a recurring remote agent, set up automated tasks, create a cron job for Claude Code, or manage their scheduled agents/triggers.',
     userInvocable: true,
@@ -338,7 +338,7 @@ export function registerScheduleRemoteAgentsSkill(): void {
         return [
           {
             type: 'text',
-            text: 'You need to authenticate with a claude.ai account first. API accounts are not supported. Run /login, then try /schedule again.',
+            text: '您需要先使用 claude.ai 账户认证。不支持 API 账户。请运行 /login 后重试 /schedule。',
           },
         ]
       }
@@ -353,7 +353,7 @@ export function registerScheduleRemoteAgentsSkill(): void {
         return [
           {
             type: 'text',
-            text: "We're having trouble connecting with your remote claude.ai account to set up a scheduled task. Please try /schedule again in a few minutes.",
+            text: '连接远程 claude.ai 账户时遇到问题。请稍后重试 /schedule。',
           },
         ]
       }
@@ -372,7 +372,7 @@ export function registerScheduleRemoteAgentsSkill(): void {
           return [
             {
               type: 'text',
-              text: 'No remote environments found, and we could not create one automatically. Visit https://claude.ai/code to set one up, then run /schedule again.',
+              text: '未找到远程环境，且无法自动创建。请访问 https://claude.ai/code 设置后重试 /schedule。',
             },
           ]
         }

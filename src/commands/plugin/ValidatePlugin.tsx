@@ -7,6 +7,7 @@ import { errorMessage } from '../../utils/errors.js';
 import { logError } from '../../utils/log.js';
 import { validateManifest } from '../../utils/plugins/validatePlugin.js';
 import { plural } from '../../utils/stringUtils.js';
+import { uiText } from '../../utils/uiLocale.js';
 type Props = {
   onComplete: (result?: string) => void;
   path?: string;
@@ -23,17 +24,17 @@ export function ValidatePlugin(t0) {
     t1 = () => {
       const runValidation = async function runValidation() {
         if (!path) {
-          onComplete("Usage: /plugin validate <path>\n\nValidate a plugin or marketplace manifest file or directory.\n\nExamples:\n  /plugin validate .claude-plugin/plugin.json\n  /plugin validate /path/to/plugin-directory\n  /plugin validate .\n\nWhen given a directory, automatically validates .claude-plugin/marketplace.json\nor .claude-plugin/plugin.json (prefers marketplace if both exist).\n\nOr from the command line:\n  claude plugin validate <path>");
+          onComplete(uiText("Usage: /plugin validate <path>\n\nValidate a plugin or marketplace manifest file or directory.\n\nExamples:\n  /plugin validate .claude-plugin/plugin.json\n  /plugin validate /path/to/plugin-directory\n  /plugin validate .\n\nWhen given a directory, automatically validates .claude-plugin/marketplace.json\nor .claude-plugin/plugin.json (prefers marketplace if both exist).\n\nOr from the command line:\n  claude plugin validate <path>", "用法：/plugin validate <path>\n\n校验插件或插件市场的 manifest 文件/目录。\n\n示例：\n  /plugin validate .claude-plugin/plugin.json\n  /plugin validate /path/to/plugin-directory\n  /plugin validate .\n\n当输入为目录时，会自动校验 .claude-plugin/marketplace.json\n或 .claude-plugin/plugin.json（若两者都存在，优先 marketplace）。\n\n命令行也可使用：\n  claude plugin validate <path>"));
           return;
         }
         ;
         try {
           const result = await validateManifest(path);
           let output = "";
-          output = output + `Validating ${result.fileType} manifest: ${result.filePath}\n\n`;
+          output = output + uiText(`Validating ${result.fileType} manifest: ${result.filePath}\n\n`, `正在校验 ${result.fileType} manifest：${result.filePath}\n\n`);
           output;
           if (result.errors.length > 0) {
-            output = output + `${figures.cross} Found ${result.errors.length} ${plural(result.errors.length, "error")}:\n\n`;
+            output = output + uiText(`${figures.cross} Found ${result.errors.length} ${plural(result.errors.length, "error")}:\n\n`, `${figures.cross} 发现 ${result.errors.length} 个错误：\n\n`);
             output;
             result.errors.forEach(error_0 => {
               output = output + `  ${figures.pointer} ${error_0.path}: ${error_0.message}\n`;
@@ -43,7 +44,7 @@ export function ValidatePlugin(t0) {
             output;
           }
           if (result.warnings.length > 0) {
-            output = output + `${figures.warning} Found ${result.warnings.length} ${plural(result.warnings.length, "warning")}:\n\n`;
+            output = output + uiText(`${figures.warning} Found ${result.warnings.length} ${plural(result.warnings.length, "warning")}:\n\n`, `${figures.warning} 发现 ${result.warnings.length} 个警告：\n\n`);
             output;
             result.warnings.forEach(warning => {
               output = output + `  ${figures.pointer} ${warning.path}: ${warning.message}\n`;
@@ -54,15 +55,15 @@ export function ValidatePlugin(t0) {
           }
           if (result.success) {
             if (result.warnings.length > 0) {
-              output = output + `${figures.tick} Validation passed with warnings\n`;
+              output = output + uiText(`${figures.tick} Validation passed with warnings\n`, `${figures.tick} 校验通过（含警告）\n`);
               output;
             } else {
-              output = output + `${figures.tick} Validation passed\n`;
+              output = output + uiText(`${figures.tick} Validation passed\n`, `${figures.tick} 校验通过\n`);
               output;
             }
             process.exitCode = 0;
           } else {
-            output = output + `${figures.cross} Validation failed\n`;
+            output = output + uiText(`${figures.cross} Validation failed\n`, `${figures.cross} 校验失败\n`);
             output;
             process.exitCode = 1;
           }
@@ -71,7 +72,7 @@ export function ValidatePlugin(t0) {
           const error = t3;
           process.exitCode = 2;
           logError(error);
-          onComplete(`${figures.cross} Unexpected error during validation: ${errorMessage(error)}`);
+          onComplete(uiText(`${figures.cross} Unexpected error during validation: ${errorMessage(error)}`, `${figures.cross} 校验过程中发生异常：${errorMessage(error)}`));
         }
       };
       runValidation();
@@ -88,7 +89,7 @@ export function ValidatePlugin(t0) {
   useEffect(t1, t2);
   let t3;
   if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
-    t3 = <Box flexDirection="column"><Text>Running validation...</Text></Box>;
+    t3 = <Box flexDirection="column"><Text>{uiText('Running validation...', '正在执行校验...')}</Text></Box>;
     $[4] = t3;
   } else {
     t3 = $[4];

@@ -64,7 +64,7 @@ If auto-memory is empty, say so and offer to review CLAUDE.md for cleanup.
   registerBundledSkill({
     name: 'remember',
     description:
-      'Review auto-memory entries and propose promotions to CLAUDE.md, CLAUDE.local.md, or shared memory. Also detects outdated, conflicting, and duplicate entries across memory layers.',
+      '审查自动记忆条目并建议提升至 CLAUDE.md、CLAUDE.local.md 或共享记忆。同时检测过期、冲突和重复的条目。',
     whenToUse:
       'Use when the user wants to review, organize, or promote their auto-memory entries. Also useful for cleaning up outdated or conflicting entries across CLAUDE.md, CLAUDE.local.md, and auto-memory.',
     userInvocable: true,

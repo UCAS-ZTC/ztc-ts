@@ -12,6 +12,7 @@ import { logError } from '../../utils/log.js';
 import { clearAllCaches } from '../../utils/plugins/cacheUtils.js';
 import { addMarketplaceSource, saveMarketplaceToSettings } from '../../utils/plugins/marketplaceManager.js';
 import { parseMarketplaceInput } from '../../utils/plugins/parseMarketplaceInput.js';
+import { uiText } from '../../utils/uiLocale.js';
 import type { ViewState } from './types.js';
 type Props = {
   inputValue: string;
@@ -45,12 +46,12 @@ export function AddMarketplace({
   const handleAdd = async () => {
     const input = inputValue.trim();
     if (!input) {
-      setError('Please enter a marketplace source');
+      setError(uiText('Please enter a marketplace source', '请输入插件市场来源'));
       return;
     }
     const parsed = await parseMarketplaceInput(input);
     if (!parsed) {
-      setError('Invalid marketplace source format. Try: owner/repo, https://..., or ./path');
+      setError(uiText('Invalid marketplace source format. Try: owner/repo, https://..., or ./path', '插件市场来源格式无效。可尝试：owner/repo、https://... 或 ./path'));
       return;
     }
 
@@ -87,7 +88,7 @@ export function AddMarketplace({
       setLoading(false);
       if (cliMode) {
         // In CLI mode, set result to trigger completion
-        setResult(`Successfully added marketplace: ${name}`);
+        setResult(uiText(`Successfully added marketplace: ${name}`, `已成功添加插件市场：${name}`));
       } else {
         // In interactive mode, switch to browse view
         setViewState({
@@ -103,7 +104,7 @@ export function AddMarketplace({
       setLoading(false);
       if (cliMode) {
         // In CLI mode, set result with error to trigger completion
-        setResult(`Error: ${error.message}`);
+        setResult(uiText(`Error: ${error.message}`, `错误：${error.message}`));
       } else {
         setResult(null);
       }
@@ -123,11 +124,11 @@ export function AddMarketplace({
   return <Box flexDirection="column">
       <Box flexDirection="column" paddingX={1} borderStyle="round">
         <Box marginBottom={1}>
-          <Text bold>Add Marketplace</Text>
+          <Text bold>{uiText('Add Marketplace', '添加插件市场')}</Text>
         </Box>
         <Box flexDirection="column">
-          <Text>Enter marketplace source:</Text>
-          <Text dimColor>Examples:</Text>
+          <Text>{uiText('Enter marketplace source:', '输入插件市场来源：')}</Text>
+          <Text dimColor>{uiText('Examples:', '示例：')}</Text>
           <Text dimColor> · owner/repo (GitHub)</Text>
           <Text dimColor> · git@github.com:owner/repo.git (SSH)</Text>
           <Text dimColor> · https://example.com/marketplace.json</Text>
@@ -139,7 +140,7 @@ export function AddMarketplace({
         {isLoading && <Box marginTop={1}>
             <Spinner />
             <Text>
-              {progressMessage || 'Adding marketplace to configuration…'}
+              {progressMessage || uiText('Adding marketplace to configuration…', '正在将插件市场添加到配置中…')}
             </Text>
           </Box>}
         {error && <Box marginTop={1}>
@@ -152,8 +153,8 @@ export function AddMarketplace({
       <Box marginLeft={3}>
         <Text dimColor italic>
           <Byline>
-            <KeyboardShortcutHint shortcut="Enter" action="add" />
-            <ConfigurableShortcutHint action="confirm:no" context="Settings" fallback="Esc" description="cancel" />
+            <KeyboardShortcutHint shortcut="Enter" action={uiText('add', '添加')} />
+            <ConfigurableShortcutHint action="confirm:no" context="Settings" fallback="Esc" description={uiText('cancel', '取消')} />
           </Byline>
         </Text>
       </Box>

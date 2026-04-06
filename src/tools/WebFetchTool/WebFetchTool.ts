@@ -131,7 +131,7 @@ export const WebFetchTool = buildTool({
     if (denyRule) {
       return {
         behavior: 'deny',
-        message: `${WebFetchTool.name} denied access to ${ruleContent}.`,
+        message: `${WebFetchTool.name} 被禁止访问 ${ruleContent}。`,
         decisionReason: {
           type: 'rule',
           rule: denyRule,
@@ -147,7 +147,7 @@ export const WebFetchTool = buildTool({
     if (askRule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
+        message: `Claude 请求使用 ${WebFetchTool.name}，但尚未获得授权。`,
         decisionReason: {
           type: 'rule',
           rule: askRule,
@@ -174,7 +174,7 @@ export const WebFetchTool = buildTool({
 
     return {
       behavior: 'ask',
-      message: `Claude requested permissions to use ${WebFetchTool.name}, but you haven't granted it yet.`,
+      message: `Claude 请求使用 ${WebFetchTool.name}，但尚未获得授权。`,
       suggestions: buildSuggestions(ruleContent),
     }
   },

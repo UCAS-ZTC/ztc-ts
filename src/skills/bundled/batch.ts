@@ -88,23 +88,23 @@ When all agents have reported, render the final table and a one-line summary (e.
 `
 }
 
-const NOT_A_GIT_REPO_MESSAGE = `This is not a git repository. The \`/batch\` command requires a git repo because it spawns agents in isolated git worktrees and creates PRs from each. Initialize a repo first, or run this from inside an existing one.`
+const NOT_A_GIT_REPO_MESSAGE = `当前不是 git 仓库。\`/batch\` 命令需要 git 仓库，因为它会在隔离的 git worktree 中生成 agent 并为每个创建 PR。请先初始化仓库，或在现有仓库中运行。`
 
-const MISSING_INSTRUCTION_MESSAGE = `Provide an instruction describing the batch change you want to make.
+const MISSING_INSTRUCTION_MESSAGE = `请提供描述批量变更的指令。
 
-Examples:
-  /batch migrate from react to vue
-  /batch replace all uses of lodash with native equivalents
-  /batch add type annotations to all untyped function parameters`
+示例:
+  /batch 从 react 迁移到 vue
+  /batch 将所有 lodash 用法替换为原生实现
+  /batch 为所有未标注类型的函数参数添加类型注解`
 
 export function registerBatchSkill(): void {
   registerBundledSkill({
     name: 'batch',
     description:
-      'Research and plan a large-scale change, then execute it in parallel across 5–30 isolated worktree agents that each open a PR.',
+      '研究并规划大规模变更，然后在 5-30 个隔离的 worktree agent 中并行执行，每个创建一个 PR。',
     whenToUse:
       'Use when the user wants to make a sweeping, mechanical change across many files (migrations, refactors, bulk renames) that can be decomposed into independent parallel units.',
-    argumentHint: '<instruction>',
+    argumentHint: '<指令>',
     userInvocable: true,
     disableModelInvocation: true,
     async getPromptForCommand(args) {

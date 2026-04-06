@@ -6,6 +6,7 @@ import type { McpClaudeAIProxyServerConfig, McpHTTPServerConfig, McpSSEServerCon
 import { extractAgentMcpServers, filterToolsByServer } from '../../services/mcp/utils.js';
 import { useAppState } from '../../state/AppState.js';
 import { getSessionIngressAuthToken } from '../../utils/sessionIngressAuth.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { MCPAgentServerMenu } from './MCPAgentServerMenu.js';
 import { MCPListPanel } from './MCPListPanel.js';
 import { MCPRemoteServerMenu } from './MCPRemoteServerMenu.js';
@@ -147,7 +148,7 @@ export function MCPSettings(t0) {
         return;
       }
       if (servers.length === 0 && agentMcpServers.length === 0) {
-        onComplete("No MCP servers configured. Please run /doctor if this is unexpected. Otherwise, run `claude mcp --help` or visit https://code.claude.com/docs/en/mcp to learn more.");
+        onComplete(uiText('No MCP servers configured. Please run /doctor if this is unexpected. Otherwise, run `claude mcp --help` or visit https://code.claude.com/docs/en/mcp to learn more.', '未配置 MCP 服务器。如果这不是预期，请运行 /doctor；否则可运行 `claude mcp --help` 或访问 https://code.claude.com/docs/en/mcp 了解更多。'));
       }
     };
     t8 = [servers.length, filteredClients.length, agentMcpServers.length, onComplete];

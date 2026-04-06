@@ -9,6 +9,7 @@ import { describeMcpConfigFilePath, filterMcpPromptsByServer } from '../../servi
 import { useAppState } from '../../state/AppState.js';
 import { errorMessage } from '../../utils/errors.js';
 import { capitalize } from '../../utils/stringUtils.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';
 import { Select } from '../CustomSelect/index.js';
 import { Byline } from '../design-system/Byline.js';
@@ -49,7 +50,7 @@ export function MCPStdioServerMenu({
       onCancel();
     } catch (err) {
       const action = wasEnabled ? 'disable' : 'enable';
-      onComplete(`Failed to ${action} MCP server '${server.name}': ${errorMessage(err)}`);
+      onComplete(uiText(`Failed to ${action} MCP server '${server.name}': ${errorMessage(err)}`, `无法${action === 'enable' ? '启用' : '禁用'} MCP 服务器 "${server.name}"：${errorMessage(err)}`));
     }
   }, [server.client.type, server.name, toggleMcpServer, onCancel, onComplete]);
   const capitalizedServerName = capitalize(String(server.name));
@@ -61,7 +62,7 @@ export function MCPStdioServerMenu({
   // Only show "View tools" if server is not disabled and has tools
   if (server.client.type !== 'disabled' && serverToolsCount > 0) {
     menuOptions.push({
-      label: 'View tools',
+      label: uiText('View tools', '查看工具'),
       value: 'tools'
     });
   }
@@ -69,61 +70,61 @@ export function MCPStdioServerMenu({
   // Only show reconnect option if the server is not disabled
   if (server.client.type !== 'disabled') {
     menuOptions.push({
-      label: 'Reconnect',
+      label: uiText('Reconnect', '重新连接'),
       value: 'reconnectMcpServer'
     });
   }
   menuOptions.push({
-    label: server.client.type !== 'disabled' ? 'Disable' : 'Enable',
+    label: server.client.type !== 'disabled' ? uiText('Disable', '禁用') : uiText('Enable', '启用'),
     value: 'toggle-enabled'
   });
 
   // If there are no other options, add a back option so Select handles escape
   if (menuOptions.length === 0) {
     menuOptions.push({
-      label: 'Back',
+      label: uiText('Back', '返回'),
       value: 'back'
     });
   }
   if (isReconnecting) {
     return <Box flexDirection="column" gap={1} padding={1}>
         <Text color="text">
-          Reconnecting to <Text bold>{server.name}</Text>
+          {uiText('Reconnecting to ', '正在重连 ')}<Text bold>{server.name}</Text>
         </Text>
         <Box>
           <Spinner />
-          <Text> Restarting MCP server process</Text>
+          <Text> {uiText('Restarting MCP server process', '正在重启 MCP 服务器进程')}</Text>
         </Box>
-        <Text dimColor>This may take a few moments.</Text>
+        <Text dimColor>{uiText('This may take a few moments.', '这可能需要一些时间。')}</Text>
       </Box>;
   }
   return <Box flexDirection="column">
       <Box flexDirection="column" paddingX={1} borderStyle={borderless ? undefined : 'round'}>
         <Box marginBottom={1}>
-          <Text bold>{capitalizedServerName} MCP Server</Text>
+          <Text bold>{capitalizedServerName} MCP {uiText('Server', '服务器')}</Text>
         </Box>
 
         <Box flexDirection="column" gap={0}>
           <Box>
-            <Text bold>Status: </Text>
-            {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} disabled</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} connected</Text> : server.client.type === 'pending' ? <>
+            <Text bold>{uiText('Status: ', '状态：')}</Text>
+            {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} {uiText('disabled', '已禁用')}</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} {uiText('connected', '已连接')}</Text> : server.client.type === 'pending' ? <>
                 <Text dimColor>{figures.radioOff}</Text>
-                <Text> connecting…</Text>
-              </> : <Text>{color('error', theme)(figures.cross)} failed</Text>}
+                <Text> {uiText('connecting…', '连接中…')}</Text>
+              </> : <Text>{color('error', theme)(figures.cross)} {uiText('failed', '失败')}</Text>}
           </Box>
 
           <Box>
-            <Text bold>Command: </Text>
+            <Text bold>{uiText('Command: ', '命令：')}</Text>
             <Text dimColor>{server.config.command}</Text>
           </Box>
 
           {server.config.args && server.config.args.length > 0 && <Box>
-              <Text bold>Args: </Text>
+              <Text bold>{uiText('Args: ', '参数：')}</Text>
               <Text dimColor>{server.config.args.join(' ')}</Text>
             </Box>}
 
           <Box>
-            <Text bold>Config location: </Text>
+            <Text bold>{uiText('Config location: ', '配置位置：')}</Text>
             <Text dimColor>
               {describeMcpConfigFilePath(getMcpConfigByName(server.name)?.scope ?? 'dynamic')}
             </Text>
@@ -132,8 +133,8 @@ export function MCPStdioServerMenu({
           {server.client.type === 'connected' && <CapabilitiesSection serverToolsCount={serverToolsCount} serverPromptsCount={serverCommandsCount} serverResourcesCount={mcp.resources[server.name]?.length || 0} />}
 
           {server.client.type === 'connected' && serverToolsCount > 0 && <Box>
-              <Text bold>Tools: </Text>
-              <Text dimColor>{serverToolsCount} tools</Text>
+              <Text bold>{uiText('Tools: ', '工具：')}</Text>
+              <Text dimColor>{uiText(`${serverToolsCount} tools`, `${serverToolsCount} 个工具`)}</Text>
             </Box>}
         </Box>
 
@@ -165,10 +166,10 @@ export function MCPStdioServerMenu({
 
       <Box marginTop={1}>
         <Text dimColor italic>
-          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <Byline>
-              <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
-              <KeyboardShortcutHint shortcut="Enter" action="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          {exitState.pending ? <>{uiText('Press ', '再次按 ')}{exitState.keyName}{uiText(' again to exit', ' 退出')}</> : <Byline>
+              <KeyboardShortcutHint shortcut="↑↓" action={uiText('navigate', '导航')} />
+              <KeyboardShortcutHint shortcut="Enter" action={uiText('select', '选择')} />
+              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('back', '返回')} />
             </Byline>}
         </Text>
       </Box>

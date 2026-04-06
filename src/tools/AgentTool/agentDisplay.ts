@@ -8,6 +8,7 @@ import {
   getSourceDisplayName,
   type SettingSource,
 } from '../../utils/settings/constants.js'
+import { uiText } from '../../utils/uiLocale.js'
 import type { AgentDefinition } from './loadAgentsDir.js'
 
 type AgentSource = SettingSource | 'built-in' | 'plugin'
@@ -22,13 +23,13 @@ export type AgentSourceGroup = {
  * Both the CLI and interactive UI should use this to ensure consistent ordering.
  */
 export const AGENT_SOURCE_GROUPS: AgentSourceGroup[] = [
-  { label: 'User agents', source: 'userSettings' },
-  { label: 'Project agents', source: 'projectSettings' },
-  { label: 'Local agents', source: 'localSettings' },
-  { label: 'Managed agents', source: 'policySettings' },
-  { label: 'Plugin agents', source: 'plugin' },
-  { label: 'CLI arg agents', source: 'flagSettings' },
-  { label: 'Built-in agents', source: 'built-in' },
+  { label: uiText('User agents', '用户 agents'), source: 'userSettings' },
+  { label: uiText('Project agents', '项目 agents'), source: 'projectSettings' },
+  { label: uiText('Local agents', '本地 agents'), source: 'localSettings' },
+  { label: uiText('Managed agents', '托管 agents'), source: 'policySettings' },
+  { label: uiText('Plugin agents', '插件 agents'), source: 'plugin' },
+  { label: uiText('CLI arg agents', '命令行参数 agents'), source: 'flagSettings' },
+  { label: uiText('Built-in agents', '内置 agents'), source: 'built-in' },
 ]
 
 export type ResolvedAgent = AgentDefinition & {
@@ -80,7 +81,7 @@ export function resolveAgentModelDisplay(
 ): string | undefined {
   const model = agent.model || getDefaultSubagentModel()
   if (!model) return undefined
-  return model === 'inherit' ? 'inherit' : model
+  return model === 'inherit' ? uiText('inherit', '继承') : model
 }
 
 /**

@@ -27,7 +27,7 @@ import { Tab, Tabs, useTabHeaderFocus } from './design-system/Tabs.js';
 import { Spinner } from './Spinner.js';
 function formatPeakDay(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString('zh-CN', {
     month: 'short',
     day: 'numeric'
   });
@@ -1032,7 +1032,7 @@ function generateXAxisLabels(data: DailyModelTokens[], _chartWidth: number, yAxi
   for (let i = 0; i < numLabels; i++) {
     const idx = Math.min(i * step, data.length - 1);
     const date = new Date(data[idx]!.date);
-    const label = date.toLocaleDateString('en-US', {
+    const label = date.toLocaleDateString('zh-CN', {
       month: 'short',
       day: 'numeric'
     });

@@ -26,15 +26,15 @@ export type SettingSource = (typeof SETTING_SOURCES)[number]
 export function getSettingSourceName(source: SettingSource): string {
   switch (source) {
     case 'userSettings':
-      return 'user'
+      return '用户'
     case 'projectSettings':
-      return 'project'
+      return '项目'
     case 'localSettings':
-      return 'project, gitignored'
+      return '项目, gitignored'
     case 'flagSettings':
-      return 'cli flag'
+      return 'CLI 参数'
     case 'policySettings':
-      return 'managed'
+      return '托管'
   }
 }
 

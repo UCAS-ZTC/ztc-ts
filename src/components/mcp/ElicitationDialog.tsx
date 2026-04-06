@@ -12,6 +12,7 @@ import type { ElicitationRequestEvent } from '../../services/mcp/elicitationHand
 import { openBrowser } from '../../utils/browser.js';
 import { getEnumLabel, getEnumValues, getMultiSelectLabel, getMultiSelectValues, isDateTimeSchema, isEnumSchema, isMultiSelectEnumSchema, validateElicitationInput, validateElicitationInputAsync } from '../../utils/mcp/elicitationValidation.js';
 import { plural } from '../../utils/stringUtils.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';
 import { Byline } from '../design-system/Byline.js';
 import { Dialog } from '../design-system/Dialog.js';
@@ -83,7 +84,7 @@ function formatDateDisplay(isoValue: string, schema: PrimitiveSchemaDefinition):
     if (Number.isNaN(date.getTime())) return isoValue;
     const format = 'format' in schema ? schema.format : undefined;
     if (format === 'date-time') {
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('zh-CN', {
         weekday: 'short',
         year: 'numeric',
         month: 'short',
@@ -97,7 +98,7 @@ function formatDateDisplay(isoValue: string, schema: PrimitiveSchemaDefinition):
     const parts = isoValue.split('-');
     if (parts.length === 3) {
       const local = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-      return local.toLocaleDateString('en-US', {
+      return local.toLocaleDateString('zh-CN', {
         weekday: 'short',
         year: 'numeric',
         month: 'short',
@@ -254,7 +255,7 @@ function ElicitationFormDialog({
   // Text fields are always in edit mode when focused — no Enter-to-edit step.
   const isEditingTextField = currentFieldIsText && !focusedButton;
   useRegisterOverlay('elicitation');
-  useNotifyAfterTimeout('Claude Code needs your input', 'elicitation_dialog');
+  useNotifyAfterTimeout(uiText('Claude Code needs your input', 'Claude Code 需要你的输入'), 'elicitation_dialog');
 
   // Sync textInputValue when the focused field changes
   const syncTextInput = useCallback((fieldIndex: number | undefined) => {
@@ -279,9 +280,9 @@ function ElicitationFormDialog({
     const max = schema_0.maxItems;
     // Skip minItems check when field is optional and unset
     if (min !== undefined && selected.length < min && (selected.length > 0 || fieldRequired)) {
-      updateValidationError(fieldName, `Select at least ${min} ${plural(min, 'item')}`);
+      updateValidationError(fieldName, uiText(`Select at least ${min} ${plural(min, 'item')}`, `请至少选择 ${min} 项`));
     } else if (max !== undefined && selected.length > max) {
-      updateValidationError(fieldName, `Select at most ${max} ${plural(max, 'item')}`);
+      updateValidationError(fieldName, uiText(`Select at most ${max} ${plural(max, 'item')}`, `最多只能选择 ${max} 项`));
     } else {
       updateValidationError(fieldName);
     }
@@ -338,7 +339,7 @@ function ElicitationFormDialog({
       return next;
     });
     // Clear "required" error when a value is provided
-    if (value !== undefined && validationErrors[fieldName_0] === 'This field is required') {
+    if (value !== undefined && validationErrors[fieldName_0] === uiText('This field is required', '此字段为必填项')) {
       updateValidationError(fieldName_0);
     }
   }
@@ -524,9 +525,9 @@ function ElicitationFormDialog({
           const min_0 = msSchema.minItems;
           const max_0 = msSchema.maxItems;
           if (min_0 !== undefined && newSelected.length < min_0 && (newSelected.length > 0 || currentField.isRequired)) {
-            updateValidationError(currentField.name, `Select at least ${min_0} ${plural(min_0, 'item')}`);
+            updateValidationError(currentField.name, uiText(`Select at least ${min_0} ${plural(min_0, 'item')}`, `请至少选择 ${min_0} 项`));
           } else if (max_0 !== undefined && newSelected.length > max_0) {
-            updateValidationError(currentField.name, `Select at most ${max_0} ${plural(max_0, 'item')}`);
+            updateValidationError(currentField.name, uiText(`Select at most ${max_0} ${plural(max_0, 'item')}`, `最多只能选择 ${max_0} 项`));
           } else {
             updateValidationError(currentField.name);
           }
@@ -612,7 +613,7 @@ function ElicitationFormDialog({
         const requiredFields_0 = requestedSchema.required || [];
         for (const fieldName_7 of requiredFields_0) {
           if (formValues[fieldName_7] === undefined) {
-            updateValidationError(fieldName_7, 'This field is required');
+            updateValidationError(fieldName_7, uiText('This field is required', '此字段为必填项'));
           }
         }
         const firstBadIndex = schemaFields.findIndex(f_0 => requiredFields_0.includes(f_0.name) && formValues[f_0.name] === undefined || validationErrors[f_0.name] !== undefined);
@@ -948,19 +949,18 @@ function ElicitationFormDialog({
       })}
         {hasFieldsBelow && <Box marginLeft={2}>
             <Text dimColor>
-              {figures.arrowDown} {schemaFields.length - scrollWindow.end} more
-              below
+              {figures.arrowDown} {uiText(`${schemaFields.length - scrollWindow.end} more below`, `下方还有 ${schemaFields.length - scrollWindow.end} 项`)}
             </Text>
           </Box>}
       </Box>;
   }
-  return <Dialog title={`MCP server \u201c${serverName}\u201d requests your input`} subtitle={`\n${message}`} color="permission" onCancel={() => onResponse('cancel')} isCancelActive={(!currentField || !!focusedButton) && !expandedAccordion} inputGuide={exitState => exitState.pending ? <Text>Press {exitState.keyName} again to exit</Text> : <Byline>
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="cancel" />
-            <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
-            {currentField && <KeyboardShortcutHint shortcut="Backspace" action="unset" />}
-            {currentField && currentField.schema.type === 'boolean' && <KeyboardShortcutHint shortcut="Space" action="toggle" />}
-            {currentField && isEnumSchema(currentField.schema) && (expandedAccordion ? <KeyboardShortcutHint shortcut="Space" action="select" /> : <KeyboardShortcutHint shortcut="→" action="expand" />)}
-            {currentField && isMultiSelectEnumSchema(currentField.schema) && (expandedAccordion ? <KeyboardShortcutHint shortcut="Space" action="toggle" /> : <KeyboardShortcutHint shortcut="→" action="expand" />)}
+  return <Dialog title={uiText(`MCP server \u201c${serverName}\u201d requests your input`, `MCP 服务器“${serverName}”需要你的输入`)} subtitle={`\n${message}`} color="permission" onCancel={() => onResponse('cancel')} isCancelActive={(!currentField || !!focusedButton) && !expandedAccordion} inputGuide={exitState => exitState.pending ? <Text>{uiText(`Press ${exitState.keyName} again to exit`, `再次按 ${exitState.keyName} 退出`)}</Text> : <Byline>
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('cancel', '取消')} />
+            <KeyboardShortcutHint shortcut="↑↓" action={uiText('navigate', '导航')} />
+            {currentField && <KeyboardShortcutHint shortcut="Backspace" action={uiText('unset', '清空')} />}
+            {currentField && currentField.schema.type === 'boolean' && <KeyboardShortcutHint shortcut="Space" action={uiText('toggle', '切换')} />}
+            {currentField && isEnumSchema(currentField.schema) && (expandedAccordion ? <KeyboardShortcutHint shortcut="Space" action={uiText('select', '选择')} /> : <KeyboardShortcutHint shortcut="→" action={uiText('expand', '展开')} />)}
+            {currentField && isMultiSelectEnumSchema(currentField.schema) && (expandedAccordion ? <KeyboardShortcutHint shortcut="Space" action={uiText('toggle', '切换')} /> : <KeyboardShortcutHint shortcut="→" action={uiText('expand', '展开')} />)}
           </Byline>}>
       <Box flexDirection="column">
         {renderFormFields()}
@@ -969,13 +969,13 @@ function ElicitationFormDialog({
             {focusedButton === 'accept' ? figures.pointer : ' '}
           </Text>
           <Text bold={focusedButton === 'accept'} color={focusedButton === 'accept' ? 'success' : undefined} dimColor={focusedButton !== 'accept'}>
-            {' Accept  '}
+            {uiText(' Accept  ', ' 接受  ')}
           </Text>
           <Text color="error">
             {focusedButton === 'decline' ? figures.pointer : ' '}
           </Text>
           <Text bold={focusedButton === 'decline'} color={focusedButton === 'decline' ? 'error' : undefined} dimColor={focusedButton !== 'decline'}>
-            {' Decline'}
+            {uiText(' Decline', ' 拒绝')}
           </Text>
         </Box>
       </Box>
@@ -1004,7 +1004,7 @@ function ElicitationURLDialog({
   const phaseRef = useRef<'prompt' | 'waiting'>('prompt');
   const [focusedButton, setFocusedButton] = useState<'accept' | 'decline' | 'open' | 'action' | 'cancel'>('accept');
   const showCancel = waitingState?.showCancel ?? false;
-  useNotifyAfterTimeout('Claude Code needs your input', 'elicitation_url_dialog');
+  useNotifyAfterTimeout(uiText('Claude Code needs your input', 'Claude Code 需要你的输入'), 'elicitation_url_dialog');
   useRegisterOverlay('elicitation-url');
 
   // Keep refs in sync for use in abort handler (avoids re-registering listener)
@@ -1093,10 +1093,10 @@ function ElicitationURLDialog({
     }
   });
   if (phase === 'waiting') {
-    const actionLabel = waitingState?.actionLabel ?? 'Continue without waiting';
-    return <Dialog title={`MCP server \u201c${serverName}\u201d \u2014 waiting for completion`} subtitle={`\n${message}`} color="permission" onCancel={() => onWaitingDismiss?.('cancel')} isCancelActive inputGuide={exitState => exitState.pending ? <Text>Press {exitState.keyName} again to exit</Text> : <Byline>
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="cancel" />
-              <KeyboardShortcutHint shortcut="\u2190\u2192" action="switch" />
+    const actionLabel = waitingState?.actionLabel ?? uiText('Continue without waiting', '不再等待，继续执行');
+    return <Dialog title={uiText(`MCP server \u201c${serverName}\u201d \u2014 waiting for completion`, `MCP 服务器“${serverName}”正在等待完成`)} subtitle={`\n${message}`} color="permission" onCancel={() => onWaitingDismiss?.('cancel')} isCancelActive inputGuide={exitState => exitState.pending ? <Text>{uiText(`Press ${exitState.keyName} again to exit`, `再次按 ${exitState.keyName} 退出`)}</Text> : <Byline>
+              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('cancel', '取消')} />
+              <KeyboardShortcutHint shortcut="\u2190\u2192" action={uiText('switch', '切换')} />
             </Byline>}>
         <Box flexDirection="column">
           <Box marginBottom={1} flexDirection="column">
@@ -1108,7 +1108,7 @@ function ElicitationURLDialog({
           </Box>
           <Box marginBottom={1}>
             <Text dimColor italic>
-              Waiting for the server to confirm completion…
+              {uiText('Waiting for the server to confirm completion…', '正在等待服务器确认完成…')}
             </Text>
           </Box>
           <Box>
@@ -1116,7 +1116,7 @@ function ElicitationURLDialog({
               {focusedButton === 'open' ? figures.pointer : ' '}
             </Text>
             <Text bold={focusedButton === 'open'} color={focusedButton === 'open' ? 'success' : undefined} dimColor={focusedButton !== 'open'}>
-              {' Reopen URL  '}
+              {uiText(' Reopen URL  ', ' 重新打开链接  ')}
             </Text>
             <Text color="success">
               {focusedButton === 'action' ? figures.pointer : ' '}
@@ -1130,16 +1130,16 @@ function ElicitationURLDialog({
                   {focusedButton === 'cancel' ? figures.pointer : ' '}
                 </Text>
                 <Text bold={focusedButton === 'cancel'} color={focusedButton === 'cancel' ? 'error' : undefined} dimColor={focusedButton !== 'cancel'}>
-                  {' Cancel'}
+                  {uiText(' Cancel', ' 取消')}
                 </Text>
               </>}
           </Box>
         </Box>
       </Dialog>;
   }
-  return <Dialog title={`MCP server \u201c${serverName}\u201d wants to open a URL`} subtitle={`\n${message}`} color="permission" onCancel={() => onResponse('cancel')} isCancelActive inputGuide={exitState_0 => exitState_0.pending ? <Text>Press {exitState_0.keyName} again to exit</Text> : <Byline>
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="cancel" />
-            <KeyboardShortcutHint shortcut="\u2190\u2192" action="switch" />
+  return <Dialog title={uiText(`MCP server \u201c${serverName}\u201d wants to open a URL`, `MCP 服务器“${serverName}”想要打开一个链接`)} subtitle={`\n${message}`} color="permission" onCancel={() => onResponse('cancel')} isCancelActive inputGuide={exitState_0 => exitState_0.pending ? <Text>{uiText(`Press ${exitState_0.keyName} again to exit`, `再次按 ${exitState_0.keyName} 退出`)}</Text> : <Byline>
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('cancel', '取消')} />
+            <KeyboardShortcutHint shortcut="\u2190\u2192" action={uiText('switch', '切换')} />
           </Byline>}>
       <Box flexDirection="column">
         <Box marginBottom={1} flexDirection="column">
@@ -1154,13 +1154,13 @@ function ElicitationURLDialog({
             {focusedButton === 'accept' ? figures.pointer : ' '}
           </Text>
           <Text bold={focusedButton === 'accept'} color={focusedButton === 'accept' ? 'success' : undefined} dimColor={focusedButton !== 'accept'}>
-            {' Accept  '}
+            {uiText(' Accept  ', ' 接受  ')}
           </Text>
           <Text color="error">
             {focusedButton === 'decline' ? figures.pointer : ' '}
           </Text>
           <Text bold={focusedButton === 'decline'} color={focusedButton === 'decline' ? 'error' : undefined} dimColor={focusedButton !== 'decline'}>
-            {' Decline'}
+            {uiText(' Decline', ' 拒绝')}
           </Text>
         </Box>
       </Box>

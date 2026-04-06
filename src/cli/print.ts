@@ -64,6 +64,7 @@ import {
   writeToStdout,
   registerProcessOutputErrorHandlers,
 } from 'src/utils/process.js'
+import { uiText } from 'src/utils/uiLocale.js'
 import type { Stream } from 'src/utils/stream.js'
 import { EMPTY_USAGE } from 'src/services/api/logging.js'
 import {
@@ -565,20 +566,33 @@ export async function runHeadless(
   void initializeGrowthBook()
 
   if (options.resumeSessionAt && !options.resume) {
-    process.stderr.write(`Error: --resume-session-at requires --resume\n`)
+    process.stderr.write(
+      uiText(
+        `Error: --resume-session-at requires --resume\n`,
+        `错误：--resume-session-at 需要与 --resume 一起使用\n`,
+      ),
+    )
     gracefulShutdownSync(1)
     return
   }
 
   if (options.rewindFiles && !options.resume) {
-    process.stderr.write(`Error: --rewind-files requires --resume\n`)
+    process.stderr.write(
+      uiText(
+        `Error: --rewind-files requires --resume\n`,
+        `错误：--rewind-files 需要与 --resume 一起使用\n`,
+      ),
+    )
     gracefulShutdownSync(1)
     return
   }
 
   if (options.rewindFiles && inputPrompt) {
     process.stderr.write(
-      `Error: --rewind-files is a standalone operation and cannot be used with a prompt\n`,
+      uiText(
+        `Error: --rewind-files is a standalone operation and cannot be used with a prompt\n`,
+        `错误：--rewind-files 是独立操作，不能与 prompt 同时使用\n`,
+      ),
     )
     gracefulShutdownSync(1)
     return
@@ -602,15 +616,15 @@ export async function runHeadless(
   if (sandboxUnavailableReason) {
     if (SandboxManager.isSandboxRequired()) {
       process.stderr.write(
-        `\nError: sandbox required but unavailable: ${sandboxUnavailableReason}\n` +
-          `  sandbox.failIfUnavailable is set — refusing to start without a working sandbox.\n\n`,
+        `\n${uiText('Error', '错误')}: ${uiText('sandbox required but unavailable', '沙箱被要求启用但当前不可用')}: ${sandboxUnavailableReason}\n` +
+          `  ${uiText('sandbox.failIfUnavailable is set — refusing to start without a working sandbox.', '已设置 sandbox.failIfUnavailable，缺少可用沙箱时将拒绝启动。')}\n\n`,
       )
       gracefulShutdownSync(1)
       return
     }
     process.stderr.write(
-      `\n⚠ Sandbox disabled: ${sandboxUnavailableReason}\n` +
-        `  Commands will run WITHOUT sandboxing. Network and filesystem restrictions will NOT be enforced.\n\n`,
+      `\n⚠ ${uiText('Sandbox disabled', '沙箱已禁用')}: ${sandboxUnavailableReason}\n` +
+        `  ${uiText('Commands will run WITHOUT sandboxing. Network and filesystem restrictions will NOT be enforced.', '命令将在无沙箱保护下执行，网络与文件系统限制将不会生效。')}\n\n`,
     )
   } else if (SandboxManager.isSandboxingEnabled()) {
     // Initialize sandbox with a callback that forwards network permission
@@ -619,7 +633,9 @@ export async function runHeadless(
     try {
       await SandboxManager.initialize(structuredIO.createSandboxAskCallback())
     } catch (err) {
-      process.stderr.write(`\n❌ Sandbox Error: ${errorMessage(err)}\n`)
+      process.stderr.write(
+        `\n❌ ${uiText('Sandbox Error', '沙箱错误')}: ${errorMessage(err)}\n`,
+      )
       gracefulShutdownSync(1, 'other')
       return
     }
@@ -743,7 +759,10 @@ export async function runHeadless(
 
     if (!targetMessage || targetMessage.type !== 'user') {
       process.stderr.write(
-        `Error: --rewind-files requires a user message UUID, but ${options.rewindFiles} is not a user message in this session\n`,
+        uiText(
+          `Error: --rewind-files requires a user message UUID, but ${options.rewindFiles} is not a user message in this session\n`,
+          `错误：--rewind-files 需要用户消息 UUID，但 ${options.rewindFiles} 不是当前会话中的用户消息\n`,
+        ),
       )
       gracefulShutdownSync(1)
       return
@@ -757,7 +776,9 @@ export async function runHeadless(
       false,
     )
     if (!result.canRewind) {
-      process.stderr.write(`Error: ${result.error || 'Unexpected error'}\n`)
+      process.stderr.write(
+        `${uiText('Error', '错误')}: ${result.error || uiText('Unexpected error', '未知错误')}\n`,
+      )
       gracefulShutdownSync(1)
       return
     }
@@ -778,7 +799,10 @@ export async function runHeadless(
 
   if (!inputPrompt && !hasValidResumeSessionId && !isUsingSdkUrl) {
     process.stderr.write(
-      `Error: Input must be provided either through stdin or as a prompt argument when using --print\n`,
+      uiText(
+        `Error: Input must be provided either through stdin or as a prompt argument when using --print\n`,
+        `错误：使用 --print 时，必须通过 stdin 或 prompt 参数提供输入\n`,
+      ),
     )
     gracefulShutdownSync(1)
     return
@@ -786,7 +810,10 @@ export async function runHeadless(
 
   if (options.outputFormat === 'stream-json' && !options.verbose) {
     process.stderr.write(
-      'Error: When using --print, --output-format=stream-json requires --verbose\n',
+      uiText(
+        'Error: When using --print, --output-format=stream-json requires --verbose\n',
+        '错误：使用 --print 时，--output-format=stream-json 需要同时启用 --verbose\n',
+      ),
     )
     gracefulShutdownSync(1)
     return
@@ -941,17 +968,30 @@ export async function runHeadless(
           )
           break
         case 'error_during_execution':
-          writeToStdout(`Execution error`)
+          writeToStdout(uiText(`Execution error`, '执行错误'))
           break
         case 'error_max_turns':
-          writeToStdout(`Error: Reached max turns (${options.maxTurns})`)
+          writeToStdout(
+            uiText(
+              `Error: Reached max turns (${options.maxTurns})`,
+              `错误：已达到最大轮数（${options.maxTurns}）`,
+            ),
+          )
           break
         case 'error_max_budget_usd':
-          writeToStdout(`Error: Exceeded USD budget (${options.maxBudgetUsd})`)
+          writeToStdout(
+            uiText(
+              `Error: Exceeded USD budget (${options.maxBudgetUsd})`,
+              `错误：已超出美元预算（${options.maxBudgetUsd}）`,
+            ),
+          )
           break
         case 'error_max_structured_output_retries':
           writeToStdout(
-            `Error: Failed to provide valid structured output after maximum retries`,
+            uiText(
+              `Error: Failed to provide valid structured output after maximum retries`,
+              `错误：达到最大重试次数后仍未生成有效结构化输出`,
+            ),
           )
       }
   }
@@ -4309,13 +4349,19 @@ export function getCanUseToolFn(
         toolMatchesName(t, permissionPromptToolName),
       ) as PermissionPromptTool | undefined
       if (!permissionPromptTool) {
-        const error = `Error: MCP tool ${permissionPromptToolName} (passed via --permission-prompt-tool) not found. Available MCP tools: ${mcpTools.map(t => t.name).join(', ') || 'none'}`
+        const error = uiText(
+          `Error: MCP tool ${permissionPromptToolName} (passed via --permission-prompt-tool) not found. Available MCP tools: ${mcpTools.map(t => t.name).join(', ') || 'none'}`,
+          `错误：未找到通过 --permission-prompt-tool 指定的 MCP 工具 ${permissionPromptToolName}。可用 MCP 工具：${mcpTools.map(t => t.name).join(', ') || '无'}`,
+        )
         process.stderr.write(`${error}\n`)
         gracefulShutdownSync(1)
         throw new Error(error)
       }
       if (!permissionPromptTool.inputJSONSchema) {
-        const error = `Error: tool ${permissionPromptToolName} (passed via --permission-prompt-tool) must be an MCP tool`
+        const error = uiText(
+          `Error: tool ${permissionPromptToolName} (passed via --permission-prompt-tool) must be an MCP tool`,
+          `错误：通过 --permission-prompt-tool 指定的工具 ${permissionPromptToolName} 必须是 MCP 工具`,
+        )
         process.stderr.write(`${error}\n`)
         gracefulShutdownSync(1)
         throw new Error(error)
@@ -4524,12 +4570,12 @@ async function handleRewindFiles(
   dryRun: boolean,
 ): Promise<RewindFilesResult> {
   if (!fileHistoryEnabled()) {
-    return { canRewind: false, error: 'File rewinding is not enabled.' }
+    return { canRewind: false, error: uiText('File rewinding is not enabled.', '文件回滚功能未启用。') }
   }
   if (!fileHistoryCanRestore(appState.fileHistory, userMessageId)) {
     return {
       canRewind: false,
-      error: 'No file checkpoint found for this message.',
+      error: uiText('No file checkpoint found for this message.', '未找到该消息对应的文件检查点。'),
     }
   }
 
@@ -4558,7 +4604,10 @@ async function handleRewindFiles(
   } catch (error) {
     return {
       canRewind: false,
-      error: `Failed to rewind: ${errorMessage(error)}`,
+      error: uiText(
+        `Failed to rewind: ${errorMessage(error)}`,
+        `回滚失败：${errorMessage(error)}`,
+      ),
     }
   }
 
@@ -4579,8 +4628,10 @@ function handleSetPermissionMode(
         response: {
           subtype: 'error',
           request_id: requestId,
-          error:
+          error: uiText(
             'Cannot set permission mode to bypassPermissions because it is disabled by settings or configuration',
+            '无法将权限模式设置为 bypassPermissions：该模式已被设置或配置禁用',
+          ),
         },
       })
       return toolPermissionContext
@@ -4591,8 +4642,10 @@ function handleSetPermissionMode(
         response: {
           subtype: 'error',
           request_id: requestId,
-          error:
+          error: uiText(
             'Cannot set permission mode to bypassPermissions because the session was not launched with --dangerously-skip-permissions',
+            '无法将权限模式设置为 bypassPermissions：当前会话未使用 --dangerously-skip-permissions 启动',
+          ),
         },
       })
       return toolPermissionContext
@@ -4612,8 +4665,14 @@ function handleSetPermissionMode(
         subtype: 'error',
         request_id: requestId,
         error: reason
-          ? `Cannot set permission mode to auto: ${getAutoModeUnavailableNotification(reason)}`
-          : 'Cannot set permission mode to auto',
+          ? uiText(
+              `Cannot set permission mode to auto: ${getAutoModeUnavailableNotification(reason)}`,
+              `无法将权限模式设置为 auto：${getAutoModeUnavailableNotification(reason)}`,
+            )
+          : uiText(
+              'Cannot set permission mode to auto',
+              '无法将权限模式设置为 auto',
+            ),
       },
     })
     return toolPermissionContext
@@ -4990,14 +5049,22 @@ async function loadInitialMessages(
     try {
       if (!isPolicyAllowed('allow_remote_sessions')) {
         throw new Error(
-          "Remote sessions are disabled by your organization's policy.",
+          uiText(
+            "Remote sessions are disabled by your organization's policy.",
+            '远程会话已被组织策略禁用。',
+          ),
         )
       }
 
       logEvent('tengu_teleport_print', {})
 
       if (typeof options.teleport !== 'string') {
-        throw new Error('No session ID provided for teleport')
+        throw new Error(
+          uiText(
+            'No session ID provided for teleport',
+            '未为 teleport 提供会话 ID',
+          ),
+        )
       }
 
       const {
@@ -5036,9 +5103,15 @@ async function loadInitialMessages(
       )
       if (!parsedSessionId) {
         let errorMessage =
-          'Error: --resume requires a valid session ID when used with --print. Usage: claude -p --resume <session-id>'
+          uiText(
+            'Error: --resume requires a valid session ID when used with --print. Usage: claude -p --resume <session-id>',
+            '错误：在 --print 模式下，--resume 需要有效 session ID。用法：claude -p --resume <session-id>',
+          )
         if (typeof options.resume === 'string') {
-          errorMessage += `. Session IDs must be in UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000). Provided value "${options.resume}" is not a valid UUID`
+          errorMessage += uiText(
+            `. Session IDs must be in UUID format (e.g., 550e8400-e29b-41d4-a716-446655440000). Provided value "${options.resume}" is not a valid UUID`,
+            `。Session ID 必须为 UUID 格式（例如 550e8400-e29b-41d4-a716-446655440000），当前值 "${options.resume}" 无效`,
+          )
         }
         emitLoadError(errorMessage, options.outputFormat)
         gracefulShutdownSync(1)
@@ -5094,7 +5167,10 @@ async function loadInitialMessages(
           }
         } else {
           emitLoadError(
-            `No conversation found with session ID: ${parsedSessionId.sessionId}`,
+            uiText(
+              `No conversation found with session ID: ${parsedSessionId.sessionId}`,
+              `未找到 session ID 为 ${parsedSessionId.sessionId} 的会话`,
+            ),
             options.outputFormat,
           )
           gracefulShutdownSync(1)
@@ -5109,7 +5185,10 @@ async function loadInitialMessages(
         )
         if (index < 0) {
           emitLoadError(
-            `No message found with message.uuid of: ${options.resumeSessionAt}`,
+            uiText(
+              `No message found with message.uuid of: ${options.resumeSessionAt}`,
+              `未找到 message.uuid 为 ${options.resumeSessionAt} 的消息`,
+            ),
             options.outputFormat,
           )
           gracefulShutdownSync(1)
@@ -5179,8 +5258,14 @@ async function loadInitialMessages(
       logError(error)
       const errorMessage =
         error instanceof Error
-          ? `Failed to resume session: ${error.message}`
-          : 'Failed to resume session with --print mode'
+          ? uiText(
+              `Failed to resume session: ${error.message}`,
+              `恢复会话失败：${error.message}`,
+            )
+          : uiText(
+              'Failed to resume session with --print mode',
+              '在 --print 模式下恢复会话失败',
+            )
       emitLoadError(errorMessage, options.outputFormat)
       gracefulShutdownSync(1)
       return { messages: [] }

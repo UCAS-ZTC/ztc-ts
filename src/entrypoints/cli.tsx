@@ -1,4 +1,5 @@
 import { feature } from '../../shims/bun-bundle.js';
+import { uiText } from '../utils/uiLocale.js';
 
 // Bugfix for corepack auto-pinning, which adds yarnpkg to peoples' package.jsons
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
@@ -141,7 +142,7 @@ async function main(): Promise<void> {
     }
     const disabledReason = await getBridgeDisabledReason();
     if (disabledReason) {
-      exitWithError(`Error: ${disabledReason}`);
+      exitWithError(uiText(`Error: ${disabledReason}`, `错误：${disabledReason}`));
     }
     const versionError = checkBridgeMinVersion();
     if (versionError) {
@@ -155,7 +156,7 @@ async function main(): Promise<void> {
     } = await import('../services/policyLimits/index.js');
     await waitForPolicyLimitsToLoad();
     if (!isPolicyAllowed('allow_remote_control')) {
-      exitWithError("Error: Remote Control is disabled by your organization's policy.");
+      exitWithError(uiText("Error: Remote Control is disabled by your organization's policy.", '错误：组织策略已禁用 Remote Control。'));
     }
     await bridgeMain(args.slice(1));
     return;
@@ -299,7 +300,7 @@ async function main(): Promise<void> {
 }
 
 async function fatalExit(label: string, error: unknown): Promise<void> {
-  console.error(`\n[Fatal] ${label}:`, error);
+  console.error(uiText(`\n[Fatal] ${label}:`, `\n[致命错误] ${label}：`), error);
   try {
     const {
       gracefulShutdownSync

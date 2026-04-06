@@ -42,6 +42,7 @@ import {
   buildAccountProperties,
   buildAPIProviderProperties,
 } from '../../utils/status.js'
+import { uiText } from '../../utils/uiLocale.js'
 
 /**
  * Shared post-token-acquisition logic. Saves tokens, fetches profile/roles,
@@ -101,7 +102,10 @@ export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
     const apiKey = await createAndStoreApiKey(tokens.accessToken)
     if (!apiKey) {
       throw new Error(
-        'Unable to create API key. The server accepted the request but did not return a key.',
+        uiText(
+          'Unable to create API key. The server accepted the request but did not return a key.',
+          '无法创建 API key。服务器已接受请求，但未返回 key。',
+        ),
       )
     }
   }
@@ -122,7 +126,10 @@ export async function authLogin({
 }): Promise<void> {
   if (useConsole && claudeai) {
     process.stderr.write(
-      'Error: --console and --claudeai cannot be used together.\n',
+      uiText(
+        'Error: --console and --claudeai cannot be used together.\n',
+        '错误：--console 与 --claudeai 不能同时使用。\n',
+      ),
     )
     process.exit(1)
   }
@@ -142,9 +149,14 @@ export async function authLogin({
     const envScopes = process.env.CLAUDE_CODE_OAUTH_SCOPES
     if (!envScopes) {
       process.stderr.write(
-        'CLAUDE_CODE_OAUTH_SCOPES is required when using CLAUDE_CODE_OAUTH_REFRESH_TOKEN.\n' +
-          'Set it to the space-separated scopes the refresh token was issued with\n' +
-          '(e.g. "user:inference" or "user:profile user:inference user:sessions:claude_code user:mcp_servers").\n',
+        uiText(
+          'CLAUDE_CODE_OAUTH_SCOPES is required when using CLAUDE_CODE_OAUTH_REFRESH_TOKEN.\n' +
+            'Set it to the space-separated scopes the refresh token was issued with\n' +
+            '(e.g. "user:inference" or "user:profile user:inference user:sessions:claude_code user:mcp_servers").\n',
+          '使用 CLAUDE_CODE_OAUTH_REFRESH_TOKEN 时必须提供 CLAUDE_CODE_OAUTH_SCOPES。\n' +
+            '请设置为该 refresh token 签发时对应的 scope（以空格分隔）。\n' +
+            '例如："user:inference" 或 "user:profile user:inference user:sessions:claude_code user:mcp_servers"。\n',
+        ),
       )
       process.exit(1)
     }
@@ -173,13 +185,15 @@ export async function authLogin({
       logEvent('tengu_oauth_success', {
         loginWithClaudeAi: shouldUseClaudeAIAuth(tokens.scopes),
       })
-      process.stdout.write('Login successful.\n')
+      process.stdout.write(uiText('Login successful.\n', '登录成功。\n'))
       process.exit(0)
     } catch (err) {
       logError(err)
       const sslHint = getSSLErrorHint(err)
       process.stderr.write(
-        `Login failed: ${errorMessage(err)}\n${sslHint ? sslHint + '\n' : ''}`,
+        `${uiText('Login failed', '登录失败')}: ${errorMessage(err)}\n${
+          sslHint ? sslHint + '\n' : ''
+        }`,
       )
       process.exit(1)
     }
@@ -194,8 +208,15 @@ export async function authLogin({
 
     const result = await oauthService.startOAuthFlow(
       async url => {
-        process.stdout.write('Opening browser to sign in…\n')
-        process.stdout.write(`If the browser didn't open, visit: ${url}\n`)
+        process.stdout.write(
+          uiText('Opening browser to sign in…\n', '正在打开浏览器进行登录…\n'),
+        )
+        process.stdout.write(
+          uiText(
+            `If the browser didn't open, visit: ${url}\n`,
+            `如果浏览器未自动打开，请访问：${url}\n`,
+          ),
+        )
       },
       {
         loginWithClaudeAi,
@@ -215,13 +236,15 @@ export async function authLogin({
 
     logEvent('tengu_oauth_success', { loginWithClaudeAi })
 
-    process.stdout.write('Login successful.\n')
+    process.stdout.write(uiText('Login successful.\n', '登录成功。\n'))
     process.exit(0)
   } catch (err) {
     logError(err)
     const sslHint = getSSLErrorHint(err)
     process.stderr.write(
-      `Login failed: ${errorMessage(err)}\n${sslHint ? sslHint + '\n' : ''}`,
+      `${uiText('Login failed', '登录失败')}: ${errorMessage(err)}\n${
+        sslHint ? sslHint + '\n' : ''
+      }`,
     )
     process.exit(1)
   } finally {
@@ -283,11 +306,14 @@ export async function authStatus(opts: {
       }
     }
     if (!hasAuthProperty && hasApiKeyEnvVar) {
-      process.stdout.write('API key: ANTHROPIC_API_KEY\n')
+      process.stdout.write(uiText('API key', 'API 密钥') + ': ANTHROPIC_API_KEY\n')
     }
     if (!loggedIn) {
       process.stdout.write(
-        'Not logged in. Run claude auth login to authenticate.\n',
+        uiText(
+          'Not logged in. Run claude auth login to authenticate.\n',
+          '尚未登录。请运行 claude auth login 完成认证。\n',
+        ),
       )
     }
   } else {
@@ -322,9 +348,14 @@ export async function authLogout(): Promise<void> {
   try {
     await performLogout({ clearOnboarding: false })
   } catch {
-    process.stderr.write('Failed to log out.\n')
+    process.stderr.write(uiText('Failed to log out.\n', '退出登录失败。\n'))
     process.exit(1)
   }
-  process.stdout.write('Successfully logged out from your Anthropic account.\n')
+  process.stdout.write(
+    uiText(
+      'Successfully logged out from your Anthropic account.\n',
+      '已成功退出 Anthropic 账号登录。\n',
+    ),
+  )
   process.exit(0)
 }

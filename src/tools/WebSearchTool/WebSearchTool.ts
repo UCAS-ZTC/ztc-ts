@@ -209,7 +209,7 @@ export const WebSearchTool = buildTool({
   async checkPermissions(_input): Promise<PermissionResult> {
     return {
       behavior: 'passthrough',
-      message: 'WebSearchTool requires permission.',
+      message: 'WebSearchTool 需要授权许可。',
       suggestions: [
         {
           type: 'addRules',

@@ -20,6 +20,7 @@ import { getSettingsWithAllErrors } from './settings/allErrors.js';
 import { getEnabledSettingSources, getSettingSourceDisplayNameCapitalized } from './settings/constants.js';
 import { getManagedFileSettingsPresence, getPolicySettingsOrigin, getSettingsForSource } from './settings/settings.js';
 import type { ThemeName } from './theme.js';
+import { uiText } from './uiLocale.js';
 export type Property = {
   label?: string;
   value: React.ReactNode | Array<string>;
@@ -31,22 +32,22 @@ export function buildSandboxProperties(): Property[] {
   }
   const isSandboxed = SandboxManager.isSandboxingEnabled();
   return [{
-    label: 'Bash Sandbox',
-    value: isSandboxed ? 'Enabled' : 'Disabled'
+    label: uiText('Bash Sandbox', 'Bash 沙箱'),
+    value: isSandboxed ? uiText('Enabled', '已启用') : uiText('Disabled', '已禁用')
   }];
 }
 export function buildIDEProperties(mcpClients: MCPServerConnection[], ideInstallationStatus: IDEExtensionInstallationStatus | null = null, theme: ThemeName): Property[] {
   const ideClient = mcpClients?.find(client => client.name === 'ide');
   if (ideInstallationStatus) {
     const ideName = toIDEDisplayName(ideInstallationStatus.ideType);
-    const pluginOrExtension = isJetBrainsIde(ideInstallationStatus.ideType) ? 'plugin' : 'extension';
+    const pluginOrExtension = isJetBrainsIde(ideInstallationStatus.ideType) ? uiText('plugin', '插件') : uiText('extension', '扩展');
     if (ideInstallationStatus.error) {
       return [{
         label: 'IDE',
         value: <Text>
-              {color('error', theme)(figures.cross)} Error installing {ideName}{' '}
+              {color('error', theme)(figures.cross)} {uiText('Error installing', '安装失败')} {ideName}{' '}
               {pluginOrExtension}: {ideInstallationStatus.error}
-              {'\n'}Please restart your IDE and try again.
+              {'\n'}{uiText('Please restart your IDE and try again.', '请重启 IDE 后重试。')}
             </Text>
       }];
     }
@@ -55,18 +56,18 @@ export function buildIDEProperties(mcpClients: MCPServerConnection[], ideInstall
         if (ideInstallationStatus.installedVersion !== ideClient.serverInfo?.version) {
           return [{
             label: 'IDE',
-            value: `Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion} (server version: ${ideClient.serverInfo?.version})`
+            value: uiText(`Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion} (server version: ${ideClient.serverInfo?.version})`, `已连接到 ${ideName} ${pluginOrExtension}，版本 ${ideInstallationStatus.installedVersion}（服务器版本：${ideClient.serverInfo?.version}）`)
           }];
         } else {
           return [{
             label: 'IDE',
-            value: `Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion}`
+            value: uiText(`Connected to ${ideName} ${pluginOrExtension} version ${ideInstallationStatus.installedVersion}`, `已连接到 ${ideName} ${pluginOrExtension}，版本 ${ideInstallationStatus.installedVersion}`)
           }];
         }
       } else {
         return [{
           label: 'IDE',
-          value: `Installed ${ideName} ${pluginOrExtension}`
+          value: uiText(`Installed ${ideName} ${pluginOrExtension}`, `已安装 ${ideName} ${pluginOrExtension}`)
         }];
       }
     }
@@ -75,12 +76,12 @@ export function buildIDEProperties(mcpClients: MCPServerConnection[], ideInstall
     if (ideClient.type === 'connected') {
       return [{
         label: 'IDE',
-        value: `Connected to ${ideName} extension`
+        value: uiText(`Connected to ${ideName} extension`, `已连接到 ${ideName} 扩展`)
       }];
     } else {
       return [{
         label: 'IDE',
-        value: `${color('error', theme)(figures.cross)} Not connected to ${ideName}`
+        value: `${color('error', theme)(figures.cross)} ${uiText(`Not connected to ${ideName}`, `未连接到 ${ideName}`)}`
       }];
     }
   }
@@ -104,12 +105,12 @@ export function buildMcpProperties(clients: MCPServerConnection[] = [], theme: T
     if (s.type === 'connected') byState.connected++;else if (s.type === 'pending') byState.pending++;else if (s.type === 'needs-auth') byState.needsAuth++;else byState.failed++;
   }
   const parts: string[] = [];
-  if (byState.connected) parts.push(color('success', theme)(`${byState.connected} connected`));
-  if (byState.needsAuth) parts.push(color('warning', theme)(`${byState.needsAuth} need auth`));
-  if (byState.pending) parts.push(color('inactive', theme)(`${byState.pending} pending`));
-  if (byState.failed) parts.push(color('error', theme)(`${byState.failed} failed`));
+  if (byState.connected) parts.push(color('success', theme)(uiText(`${byState.connected} connected`, `${byState.connected} 已连接`)));
+  if (byState.needsAuth) parts.push(color('warning', theme)(uiText(`${byState.needsAuth} need auth`, `${byState.needsAuth} 需认证`)));
+  if (byState.pending) parts.push(color('inactive', theme)(uiText(`${byState.pending} pending`, `${byState.pending} 等待中`)));
+  if (byState.failed) parts.push(color('error', theme)(uiText(`${byState.failed} failed`, `${byState.failed} 失败`)));
   return [{
-    label: 'MCP servers',
+    label: uiText('MCP servers', 'MCP 服务器'),
     value: `${parts.join(', ')} ${color('inactive', theme)('· /mcp')}`
   }];
 }
@@ -119,7 +120,7 @@ export async function buildMemoryDiagnostics(): Promise<Diagnostic[]> {
   const diagnostics: Diagnostic[] = [];
   largeFiles.forEach(file => {
     const displayPath = getDisplayPath(file.path);
-    diagnostics.push(`Large ${displayPath} will impact performance (${formatNumber(file.content.length)} chars > ${formatNumber(MAX_MEMORY_CHARACTER_COUNT)})`);
+    diagnostics.push(uiText(`Large ${displayPath} will impact performance (${formatNumber(file.content.length)} chars > ${formatNumber(MAX_MEMORY_CHARACTER_COUNT)})`, `${displayPath} 体积较大，可能影响性能（${formatNumber(file.content.length)} 字符 > ${formatNumber(MAX_MEMORY_CHARACTER_COUNT)}）`));
   });
   return diagnostics;
 }
@@ -142,11 +143,11 @@ export function buildSettingSourcesProperties(): Property[] {
       }
       switch (origin) {
         case 'remote':
-          return 'Enterprise managed settings (remote)';
+          return uiText('Enterprise managed settings (remote)', '企业托管设置（远程）');
         case 'plist':
-          return 'Enterprise managed settings (plist)';
+          return uiText('Enterprise managed settings (plist)', '企业托管设置（plist）');
         case 'hklm':
-          return 'Enterprise managed settings (HKLM)';
+          return uiText('Enterprise managed settings (HKLM)', '企业托管设置（HKLM）');
         case 'file':
           {
             const {
@@ -154,21 +155,21 @@ export function buildSettingSourcesProperties(): Property[] {
               hasDropIns
             } = getManagedFileSettingsPresence();
             if (hasBase && hasDropIns) {
-              return 'Enterprise managed settings (file + drop-ins)';
+              return uiText('Enterprise managed settings (file + drop-ins)', '企业托管设置（主文件 + drop-ins）');
             }
             if (hasDropIns) {
-              return 'Enterprise managed settings (drop-ins)';
+              return uiText('Enterprise managed settings (drop-ins)', '企业托管设置（drop-ins）');
             }
-            return 'Enterprise managed settings (file)';
+            return uiText('Enterprise managed settings (file)', '企业托管设置（文件）');
           }
         case 'hkcu':
-          return 'Enterprise managed settings (HKCU)';
+          return uiText('Enterprise managed settings (HKCU)', '企业托管设置（HKCU）');
       }
     }
     return getSettingSourceDisplayNameCapitalized(source);
   }).filter((name): name is string => name !== null);
   return [{
-    label: 'Setting sources',
+    label: uiText('Setting sources', '设置来源'),
     value: sourceNames
   }];
 }
@@ -185,7 +186,7 @@ export async function buildInstallationHealthDiagnostics(): Promise<Diagnostic[]
   if (validationErrors.length > 0) {
     const invalidFiles = Array.from(new Set(validationErrors.map(error => error.file)));
     const fileList = invalidFiles.join(', ');
-    items.push(`Found invalid settings files: ${fileList}. They will be ignored.`);
+    items.push(uiText(`Found invalid settings files: ${fileList}. They will be ignored.`, `发现无效设置文件：${fileList}。这些文件将被忽略。`));
   }
 
   // Add warnings from doctor diagnostic (includes leftover installations, config mismatches, etc.)
@@ -193,7 +194,7 @@ export async function buildInstallationHealthDiagnostics(): Promise<Diagnostic[]
     items.push(warning.issue);
   });
   if (diagnostic.hasUpdatePermissions === false) {
-    items.push('No write permissions for auto-updates (requires sudo)');
+    items.push(uiText('No write permissions for auto-updates (requires sudo)', '自动更新无写权限（需要 sudo）'));
   }
   return items;
 }
@@ -205,19 +206,19 @@ export function buildAccountProperties(): Property[] {
   const properties: Property[] = [];
   if (accountInfo.subscription) {
     properties.push({
-      label: 'Login method',
-      value: `${accountInfo.subscription} Account`
+      label: uiText('Login method', '登录方式'),
+      value: uiText(`${accountInfo.subscription} Account`, `${accountInfo.subscription} 账号`)
     });
   }
   if (accountInfo.tokenSource) {
     properties.push({
-      label: 'Auth token',
+      label: uiText('Auth token', '认证令牌'),
       value: accountInfo.tokenSource
     });
   }
   if (accountInfo.apiKeySource) {
     properties.push({
-      label: 'API key',
+      label: uiText('API key', 'API 密钥'),
       value: accountInfo.apiKeySource
     });
   }
@@ -225,13 +226,13 @@ export function buildAccountProperties(): Property[] {
   // Hide sensitive account info in demo mode
   if (accountInfo.organization && !process.env.IS_DEMO) {
     properties.push({
-      label: 'Organization',
+      label: uiText('Organization', '组织'),
       value: accountInfo.organization
     });
   }
   if (accountInfo.email && !process.env.IS_DEMO) {
     properties.push({
-      label: 'Email',
+      label: uiText('Email', '邮箱'),
       value: accountInfo.email
     });
   }
@@ -242,12 +243,12 @@ export function buildAPIProviderProperties(): Property[] {
   const properties: Property[] = [];
   if (apiProvider !== 'firstParty') {
     const providerLabel = {
-      bedrock: 'AWS Bedrock',
-      vertex: 'Google Vertex AI',
-      foundry: 'Microsoft Foundry'
+      bedrock: uiText('AWS Bedrock', 'AWS Bedrock'),
+      vertex: uiText('Google Vertex AI', 'Google Vertex AI'),
+      foundry: uiText('Microsoft Foundry', 'Microsoft Foundry')
     }[apiProvider];
     properties.push({
-      label: 'API provider',
+      label: uiText('API provider', 'API 提供方'),
       value: providerLabel
     });
   }
@@ -255,7 +256,7 @@ export function buildAPIProviderProperties(): Property[] {
     const anthropicBaseUrl = process.env.ANTHROPIC_BASE_URL;
     if (anthropicBaseUrl) {
       properties.push({
-        label: 'Anthropic base URL',
+        label: uiText('Anthropic base URL', 'Anthropic 基础 URL'),
         value: anthropicBaseUrl
       });
     }
@@ -263,88 +264,88 @@ export function buildAPIProviderProperties(): Property[] {
     const bedrockBaseUrl = process.env.BEDROCK_BASE_URL;
     if (bedrockBaseUrl) {
       properties.push({
-        label: 'Bedrock base URL',
+        label: uiText('Bedrock base URL', 'Bedrock 基础 URL'),
         value: bedrockBaseUrl
       });
     }
     properties.push({
-      label: 'AWS region',
+      label: uiText('AWS region', 'AWS 区域'),
       value: getAWSRegion()
     });
     if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_BEDROCK_AUTH)) {
       properties.push({
-        value: 'AWS auth skipped'
+        value: uiText('AWS auth skipped', '已跳过 AWS 认证')
       });
     }
   } else if (apiProvider === 'vertex') {
     const vertexBaseUrl = process.env.VERTEX_BASE_URL;
     if (vertexBaseUrl) {
       properties.push({
-        label: 'Vertex base URL',
+        label: uiText('Vertex base URL', 'Vertex 基础 URL'),
         value: vertexBaseUrl
       });
     }
     const gcpProject = process.env.ANTHROPIC_VERTEX_PROJECT_ID;
     if (gcpProject) {
       properties.push({
-        label: 'GCP project',
+        label: uiText('GCP project', 'GCP 项目'),
         value: gcpProject
       });
     }
     properties.push({
-      label: 'Default region',
+      label: uiText('Default region', '默认区域'),
       value: getDefaultVertexRegion()
     });
     if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_VERTEX_AUTH)) {
       properties.push({
-        value: 'GCP auth skipped'
+        value: uiText('GCP auth skipped', '已跳过 GCP 认证')
       });
     }
   } else if (apiProvider === 'foundry') {
     const foundryBaseUrl = process.env.ANTHROPIC_FOUNDRY_BASE_URL;
     if (foundryBaseUrl) {
       properties.push({
-        label: 'Microsoft Foundry base URL',
+        label: uiText('Microsoft Foundry base URL', 'Microsoft Foundry 基础 URL'),
         value: foundryBaseUrl
       });
     }
     const foundryResource = process.env.ANTHROPIC_FOUNDRY_RESOURCE;
     if (foundryResource) {
       properties.push({
-        label: 'Microsoft Foundry resource',
+        label: uiText('Microsoft Foundry resource', 'Microsoft Foundry 资源'),
         value: foundryResource
       });
     }
     if (isEnvTruthy(process.env.CLAUDE_CODE_SKIP_FOUNDRY_AUTH)) {
       properties.push({
-        value: 'Microsoft Foundry auth skipped'
+        value: uiText('Microsoft Foundry auth skipped', '已跳过 Microsoft Foundry 认证')
       });
     }
   }
   const proxyUrl = getProxyUrl();
   if (proxyUrl) {
     properties.push({
-      label: 'Proxy',
+      label: uiText('Proxy', '代理'),
       value: proxyUrl
     });
   }
   const mtlsConfig = getMTLSConfig();
   if (process.env.NODE_EXTRA_CA_CERTS) {
     properties.push({
-      label: 'Additional CA cert(s)',
+      label: uiText('Additional CA cert(s)', '附加 CA 证书'),
       value: process.env.NODE_EXTRA_CA_CERTS
     });
   }
   if (mtlsConfig) {
     if (mtlsConfig.cert && process.env.CLAUDE_CODE_CLIENT_CERT) {
       properties.push({
-        label: 'mTLS client cert',
+        label: uiText('mTLS client cert', 'mTLS 客户端证书'),
         value: process.env.CLAUDE_CODE_CLIENT_CERT
       });
     }
     if (mtlsConfig.key && process.env.CLAUDE_CODE_CLIENT_KEY) {
       properties.push({
-        label: 'mTLS client key',
+        label: uiText('mTLS client key', 'mTLS 客户端密钥'),
         value: process.env.CLAUDE_CODE_CLIENT_KEY
       });
     }
@@ -355,7 +356,7 @@ export function getModelDisplayLabel(mainLoopModel: string | null): string {
   let modelLabel = modelDisplayString(mainLoopModel);
   if (mainLoopModel === null && isClaudeAISubscriber()) {
     const description = getClaudeAiUserDefaultModelDescription();
-    modelLabel = `${chalk.bold('Default')} ${description}`;
+    modelLabel = `${chalk.bold(uiText('Default', '默认'))} ${description}`;
   }
   return modelLabel;
 }

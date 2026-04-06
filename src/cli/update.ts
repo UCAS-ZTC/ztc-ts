@@ -52,9 +52,11 @@ export async function update() {
     for (const install of diagnostic.multipleInstallations) {
       const current =
         diagnostic.installationType === install.type
-          ? ' (currently running)'
+          ? ` ${uiText('(currently running)', '（当前正在运行）')}`
           : ''
-      writeToStdout(`- ${install.type} at ${install.path}${current}\n`)
+      writeToStdout(
+        `- ${install.type} ${uiText('at', '位于')} ${install.path}${current}\n`,
+      )
     }
   }
 
@@ -191,12 +193,23 @@ export async function update() {
       configExpects !== 'unknown'
     ) {
       writeToStdout('\n')
-      writeToStdout(chalk.yellow('Warning: Configuration mismatch') + '\n')
-      writeToStdout(`Config expects: ${configExpects} installation\n`)
-      writeToStdout(`Currently running: ${runningType}\n`)
       writeToStdout(
         chalk.yellow(
-          `Updating the ${runningType} installation you are currently using`,
+          uiText('Warning: Configuration mismatch', '警告：配置与实际不一致'),
+        ) + '\n',
+      )
+      writeToStdout(
+        `${uiText('Config expects', '配置期望')}: ${configExpects} ${uiText('installation', '安装方式')}\n`,
+      )
+      writeToStdout(
+        `${uiText('Currently running', '当前运行')}: ${runningType}\n`,
+      )
+      writeToStdout(
+        chalk.yellow(
+          uiText(
+            `Updating the ${runningType} installation you are currently using`,
+            `将按你当前使用的 ${runningType} 安装方式进行更新`,
+          ),
         ) + '\n',
       )
 
@@ -206,7 +219,7 @@ export async function update() {
         installMethod: normalizedRunningType as InstallMethod,
       }))
       writeToStdout(
-        `Config updated to reflect current installation method: ${normalizedRunningType}\n`,
+        `${uiText('Config updated to reflect current installation method', '配置已更新为当前安装方式')}: ${normalizedRunningType}\n`,
       )
     }
   }
@@ -222,38 +235,59 @@ export async function update() {
       // Handle lock contention gracefully
       if (result.lockFailed) {
         const pidInfo = result.lockHolderPid
-          ? ` (PID ${result.lockHolderPid})`
+          ? ` (${uiText('PID', '进程 ID')} ${result.lockHolderPid})`
           : ''
         writeToStdout(
           chalk.yellow(
-            `Another Claude process${pidInfo} is currently running. Please try again in a moment.`,
+            uiText(
+              `Another Claude process${pidInfo} is currently running. Please try again in a moment.`,
+              `另一个 Claude 进程${pidInfo}正在运行。请稍后再试。`,
+            ),
           ) + '\n',
         )
         await gracefulShutdown(0)
       }
 
       if (!result.latestVersion) {
-        process.stderr.write('Failed to check for updates\n')
+        process.stderr.write(uiText('Failed to check for updates\n', '检查更新失败\n'))
         await gracefulShutdown(1)
       }
 
       if (result.latestVersion === MACRO.VERSION) {
         writeToStdout(
-          chalk.green(`Claude Code is up to date (${MACRO.VERSION})`) + '\n',
+          chalk.green(
+            uiText(
+              `Claude Code is up to date (${MACRO.VERSION})`,
+              `Claude Code 已是最新版本（${MACRO.VERSION}）`,
+            ),
+          ) + '\n',
         )
       } else {
         writeToStdout(
           chalk.green(
-            `Successfully updated from ${MACRO.VERSION} to version ${result.latestVersion}`,
+            uiText(
+              `Successfully updated from ${MACRO.VERSION} to version ${result.latestVersion}`,
+              `已成功从 ${MACRO.VERSION} 更新到 ${result.latestVersion}`,
+            ),
           ) + '\n',
         )
         await regenerateCompletionCache()
       }
       await gracefulShutdown(0)
     } catch (error) {
-      process.stderr.write('Error: Failed to install native update\n')
+      process.stderr.write(
+        uiText(
+          'Error: Failed to install native update\n',
+          '错误：安装原生更新失败\n',
+        ),
+      )
       process.stderr.write(String(error) + '\n')
-      process.stderr.write('Try running "claude doctor" for diagnostics\n')
+      process.stderr.write(
+        uiText(
+          'Try running "claude doctor" for diagnostics\n',
+          '可尝试运行 "claude doctor" 进行诊断\n',
+        ),
+      )
       await gracefulShutdown(1)
     }
   }
@@ -277,47 +311,89 @@ export async function update() {
 
   if (!latestVersion) {
     logForDebugging('update: Failed to get latest version from npm registry')
-    process.stderr.write(chalk.red('Failed to check for updates') + '\n')
-    process.stderr.write('Unable to fetch latest version from npm registry\n')
+    process.stderr.write(
+      chalk.red(uiText('Failed to check for updates', '检查更新失败')) + '\n',
+    )
+    process.stderr.write(
+      uiText(
+        'Unable to fetch latest version from npm registry\n',
+        '无法从 npm registry 获取最新版本\n',
+      ),
+    )
     process.stderr.write('\n')
-    process.stderr.write('Possible causes:\n')
-    process.stderr.write('  • Network connectivity issues\n')
-    process.stderr.write('  • npm registry is unreachable\n')
-    process.stderr.write('  • Corporate proxy/firewall blocking npm\n')
+    process.stderr.write(uiText('Possible causes:\n', '可能原因：\n'))
+    process.stderr.write(
+      uiText('  • Network connectivity issues\n', '  • 网络连接异常\n'),
+    )
+    process.stderr.write(
+      uiText('  • npm registry is unreachable\n', '  • 无法访问 npm registry\n'),
+    )
+    process.stderr.write(
+      uiText(
+        '  • Corporate proxy/firewall blocking npm\n',
+        '  • 企业代理或防火墙阻止了 npm 访问\n',
+      ),
+    )
     if (MACRO.PACKAGE_URL && !MACRO.PACKAGE_URL.startsWith('@anthropic')) {
       process.stderr.write(
-        '  • Internal/development build not published to npm\n',
+        uiText(
+          '  • Internal/development build not published to npm\n',
+          '  • 内部/开发构建未发布到 npm\n',
+        ),
       )
     }
     process.stderr.write('\n')
-    process.stderr.write('Try:\n')
-    process.stderr.write('  • Check your internet connection\n')
-    process.stderr.write('  • Run with --debug flag for more details\n')
+    process.stderr.write(uiText('Try:\n', '建议尝试：\n'))
+    process.stderr.write(
+      uiText('  • Check your internet connection\n', '  • 检查网络连接\n'),
+    )
+    process.stderr.write(
+      uiText(
+        '  • Run with --debug flag for more details\n',
+        '  • 使用 --debug 获取更多细节\n',
+      ),
+    )
     const packageName =
       MACRO.PACKAGE_URL ||
       (process.env.USER_TYPE === 'ant'
         ? '@anthropic-ai/claude-cli'
         : '@anthropic-ai/claude-code')
     process.stderr.write(
-      `  • Manually check: npm view ${packageName} version\n`,
+      uiText(
+        `  • Manually check: npm view ${packageName} version\n`,
+        `  • 手动检查：npm view ${packageName} version\n`,
+      ),
     )
 
-    process.stderr.write('  • Check if you need to login: npm whoami\n')
+    process.stderr.write(
+      uiText(
+        '  • Check if you need to login: npm whoami\n',
+        '  • 检查是否需要登录：npm whoami\n',
+      ),
+    )
     await gracefulShutdown(1)
   }
 
   // Check if versions match exactly, including any build metadata (like SHA)
   if (latestVersion === MACRO.VERSION) {
     writeToStdout(
-      chalk.green(`Claude Code is up to date (${MACRO.VERSION})`) + '\n',
+      chalk.green(
+        uiText(
+          `Claude Code is up to date (${MACRO.VERSION})`,
+          `Claude Code 已是最新版本（${MACRO.VERSION}）`,
+        ),
+      ) + '\n',
     )
     await gracefulShutdown(0)
   }
 
   writeToStdout(
-    `New version available: ${latestVersion} (current: ${MACRO.VERSION})\n`,
+    uiText(
+      `New version available: ${latestVersion} (current: ${MACRO.VERSION})\n`,
+      `发现新版本：${latestVersion}（当前：${MACRO.VERSION}）\n`,
+    ),
   )
-  writeToStdout('Installing update...\n')
+  writeToStdout(uiText('Installing update...\n', '正在安装更新...\n'))
 
   // Determine update method based on what's actually running
   let useLocalUpdate = false
@@ -338,21 +414,37 @@ export async function update() {
       useLocalUpdate = isLocal
       updateMethodName = isLocal ? 'local' : 'global'
       writeToStdout(
-        chalk.yellow('Warning: Could not determine installation type') + '\n',
+        chalk.yellow(
+          uiText(
+            'Warning: Could not determine installation type',
+            '警告：无法确定安装类型',
+          ),
+        ) + '\n',
       )
       writeToStdout(
-        `Attempting ${updateMethodName} update based on file detection...\n`,
+        uiText(
+          `Attempting ${updateMethodName} update based on file detection...\n`,
+          `将基于文件检测尝试 ${updateMethodName} 更新...\n`,
+        ),
       )
       break
     }
     default:
       process.stderr.write(
-        `Error: Cannot update ${diagnostic.installationType} installation\n`,
+        uiText(
+          `Error: Cannot update ${diagnostic.installationType} installation\n`,
+          `错误：不支持更新 ${diagnostic.installationType} 安装类型\n`,
+        ),
       )
       await gracefulShutdown(1)
   }
 
-  writeToStdout(`Using ${updateMethodName} installation update method...\n`)
+  writeToStdout(
+    uiText(
+      `Using ${updateMethodName} installation update method...\n`,
+      `将使用 ${updateMethodName} 安装方式进行更新...\n`,
+    ),
+  )
 
   logForDebugging(`update: Update method determined: ${updateMethodName}`)
   logForDebugging(`update: useLocalUpdate: ${useLocalUpdate}`)
@@ -375,47 +467,72 @@ export async function update() {
     case 'success':
       writeToStdout(
         chalk.green(
-          `Successfully updated from ${MACRO.VERSION} to version ${latestVersion}`,
+          uiText(
+            `Successfully updated from ${MACRO.VERSION} to version ${latestVersion}`,
+            `已成功从 ${MACRO.VERSION} 更新到 ${latestVersion}`,
+          ),
         ) + '\n',
       )
       await regenerateCompletionCache()
       break
     case 'no_permissions':
       process.stderr.write(
-        'Error: Insufficient permissions to install update\n',
+        uiText(
+          'Error: Insufficient permissions to install update\n',
+          '错误：权限不足，无法安装更新\n',
+        ),
       )
       if (useLocalUpdate) {
-        process.stderr.write('Try manually updating with:\n')
+        process.stderr.write(uiText('Try manually updating with:\n', '可尝试手动更新：\n'))
         process.stderr.write(
           `  cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}\n`,
         )
       } else {
-        process.stderr.write('Try running with sudo or fix npm permissions\n')
         process.stderr.write(
-          'Or consider using native installation with: claude install\n',
+          uiText(
+            'Try running with sudo or fix npm permissions\n',
+            '可尝试使用 sudo，或修复 npm 权限\n',
+          ),
+        )
+        process.stderr.write(
+          uiText(
+            'Or consider using native installation with: claude install\n',
+            '或者改用原生安装方式：claude install\n',
+          ),
         )
       }
       await gracefulShutdown(1)
       break
     case 'install_failed':
-      process.stderr.write('Error: Failed to install update\n')
+      process.stderr.write(uiText('Error: Failed to install update\n', '错误：安装更新失败\n'))
       if (useLocalUpdate) {
-        process.stderr.write('Try manually updating with:\n')
+        process.stderr.write(uiText('Try manually updating with:\n', '可尝试手动更新：\n'))
         process.stderr.write(
           `  cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}\n`,
         )
       } else {
         process.stderr.write(
-          'Or consider using native installation with: claude install\n',
+          uiText(
+            'Or consider using native installation with: claude install\n',
+            '或者改用原生安装方式：claude install\n',
+          ),
         )
       }
       await gracefulShutdown(1)
       break
     case 'in_progress':
       process.stderr.write(
-        'Error: Another instance is currently performing an update\n',
+        uiText(
+          'Error: Another instance is currently performing an update\n',
+          '错误：另一个实例正在执行更新\n',
+        ),
       )
-      process.stderr.write('Please wait and try again later\n')
+      process.stderr.write(
+        uiText(
+          'Please wait and try again later\n',
+          '请稍后再试\n',
+        ),
+      )
       await gracefulShutdown(1)
       break
   }

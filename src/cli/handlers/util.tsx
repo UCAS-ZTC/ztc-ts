@@ -17,6 +17,7 @@ import { MCPConnectionManager } from '../../services/mcp/MCPConnectionManager.js
 import { AppStateProvider } from '../../state/AppState.js';
 import { onChangeAppState } from '../../state/onChangeAppState.js';
 import { isAnthropicAuthEnabled } from '../../utils/auth.js';
+import { uiText } from '../../utils/uiLocale.js';
 export async function setupTokenHandler(root: Root): Promise<void> {
   logEvent('tengu_setup_token_command', {});
   const showAuthWarning = !isAnthropicAuthEnabled();
@@ -30,17 +31,17 @@ export async function setupTokenHandler(root: Root): Promise<void> {
             <WelcomeV2 />
             {showAuthWarning && <Box flexDirection="column">
                 <Text color="warning">
-                  Warning: You already have authentication configured via
-                  environment variable or API key helper.
+                  {uiText('Warning', '警告')}:
+                  {' '}
+                  {uiText('You already have authentication configured via environment variable or API key helper.', '你已通过环境变量或 API key helper 配置了认证。')}
                 </Text>
                 <Text color="warning">
-                  The setup-token command will create a new OAuth token which
-                  you can use instead.
+                  {uiText('The setup-token command will create a new OAuth token which you can use instead.', 'setup-token 命令会创建一个新的 OAuth token，你可以改用该 token。')}
                 </Text>
               </Box>}
             <ConsoleOAuthFlow onDone={() => {
             void resolve();
-          }} mode="setup-token" startingMessage="This will guide you through long-lived (1-year) auth token setup for your Claude account. Claude subscription required." />
+          }} mode="setup-token" startingMessage={uiText('This will guide you through long-lived (1-year) auth token setup for your Claude account. Claude subscription required.', '这将引导你为 Claude 账号配置长期（1 年）认证 token。需要 Claude 订阅。')} />
           </Box>
         </KeybindingSetup>
       </AppStateProvider>);

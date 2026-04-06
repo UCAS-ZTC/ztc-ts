@@ -72,12 +72,12 @@ if ! printf '%s' "$LOCALE_PROBE" | grep -Eqi 'utf-?8'; then
   echo "提示：检测到非 UTF-8 语言环境，已强制设置 LANG/LC_ALL 为 C.UTF-8 以保证中文显示稳定。"
 fi
 
-# ─── Normalize API base URL (strip trailing /v1) ──────────────────────────
+# ─── Normalize API base URL (strip trailing slash only) ───────────────────
+# /v1 suffix is handled uniformly by openai-compat.ts; only strip bare trailing slashes.
 if [ -n "${ANTHROPIC_BASE_URL:-}" ]; then
-  NORMALIZED_BASE_URL="$(printf '%s' "${ANTHROPIC_BASE_URL:-}" | sed -E 's#/v1/?$##')"
+  NORMALIZED_BASE_URL="$(printf '%s' "${ANTHROPIC_BASE_URL:-}" | sed -E 's#/+$##')"
   if [ "$NORMALIZED_BASE_URL" != "${ANTHROPIC_BASE_URL:-}" ]; then
     export ANTHROPIC_BASE_URL="$NORMALIZED_BASE_URL"
-    echo "提示：已规范化 ANTHROPIC_BASE_URL -> ${ANTHROPIC_BASE_URL:-}"
   fi
 fi
 
@@ -125,10 +125,42 @@ if [ -n "${ANTHROPIC_BASE_URL:-}" ] && ! echo "${ANTHROPIC_BASE_URL:-}" | grep -
   export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS="${CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS:-1}"
 fi
 
+# ─── WSL: Configure Windows host browser ─────────────────────────────
+if grep -qi "microsoft\|wsl" /proc/version 2>/dev/null; then
+  export CLAUDE_CODE_WSL=1
+  if [ -z "${BROWSER:-}" ]; then
+    for candidate in \
+      "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe" \
+      "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" \
+      "/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"; do
+      if [ -f "$candidate" ]; then
+        export BROWSER="$candidate"
+        break
+      fi
+    done
+  fi
+fi
+
 # ─── Disable telemetry & auto-updater ────────────────────────────────
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="${CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC:-1}"
 export DISABLE_TELEMETRY="${DISABLE_TELEMETRY:-1}"
 export CLAUDE_CODE_DISABLE_AUTOUPDATER="${CLAUDE_CODE_DISABLE_AUTOUPDATER:-1}"
+
+# ─── Auto-deploy CLI-Anything skills (one-time, < 1 second) ──────────
+SKILLS_MARKER="$HOME/.claude/skills/.cli-anything-deployed"
+if [ ! -f "$SKILLS_MARKER" ]; then
+  CLI_ANYTHING_REPO="${CLI_ANYTHING_PATH:-/root/project/CC/CLI-Anything}"
+  if [ -d "$CLI_ANYTHING_REPO" ] && [ -f "$CLI_ANYTHING_REPO/registry.json" ]; then
+    echo "首次启动：正在部署 CLI-Anything skills ..."
+    if bash "$DIR/scripts/install-cli-anything.sh" --skills-only >/dev/null 2>&1; then
+      touch "$SKILLS_MARKER"
+      echo "CLI-Anything skills 部署完成。"
+    fi
+  else
+    mkdir -p "$HOME/.claude/skills"
+    touch "$SKILLS_MARKER"
+  fi
+fi
 
 # ─── Show startup config ─────────────────────────────────────────────
 IS_OPENAI_COMPAT=""
@@ -148,6 +180,12 @@ if [ -n "${ANTHROPIC_MODEL:-}" ]; then
 fi
 if [ -n "$IS_OPENAI_COMPAT" ]; then
   echo "│  API 模式: OpenAI 兼容（自动适配）"
+fi
+if [ -n "${CLAUDE_CODE_WSL:-}" ]; then
+  echo "│  运行环境: WSL → Windows 宿主机浏览器"
+  if [ -n "${BROWSER:-}" ]; then
+    echo "│  浏览器: $(basename "$BROWSER")"
+  fi
 fi
 echo "└─────────────────────────────────────────────┘"
 echo ""

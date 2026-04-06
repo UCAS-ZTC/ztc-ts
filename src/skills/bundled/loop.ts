@@ -8,19 +8,19 @@ import { registerBundledSkill } from '../bundledSkills.js'
 
 const DEFAULT_INTERVAL = '10m'
 
-const USAGE_MESSAGE = `Usage: /loop [interval] <prompt>
+const USAGE_MESSAGE = `用法: /loop [间隔] <提示>
 
-Run a prompt or slash command on a recurring interval.
+按固定间隔循环运行提示或斜杠命令。
 
-Intervals: Ns, Nm, Nh, Nd (e.g. 5m, 30m, 2h, 1d). Minimum granularity is 1 minute.
-If no interval is specified, defaults to ${DEFAULT_INTERVAL}.
+间隔格式: Ns, Nm, Nh, Nd（如 5m, 30m, 2h, 1d）。最小粒度为 1 分钟。
+未指定间隔时默认为 ${DEFAULT_INTERVAL}。
 
-Examples:
+示例:
   /loop 5m /babysit-prs
-  /loop 30m check the deploy
+  /loop 30m 检查部署状态
   /loop 1h /standup 1
-  /loop check the deploy          (defaults to ${DEFAULT_INTERVAL})
-  /loop check the deploy every 20m`
+  /loop 检查部署状态              (默认 ${DEFAULT_INTERVAL})
+  /loop 检查部署状态 every 20m`
 
 function buildPrompt(args: string): string {
   return `# /loop — schedule a recurring prompt
@@ -75,7 +75,7 @@ export function registerLoopSkill(): void {
   registerBundledSkill({
     name: 'loop',
     description:
-      'Run a prompt or slash command on a recurring interval (e.g. /loop 5m /foo, defaults to 10m)',
+      '按固定间隔循环运行提示或斜杠命令（如 /loop 5m /foo，默认 10m）',
     whenToUse:
       'When the user wants to set up a recurring task, poll for status, or run something repeatedly on an interval (e.g. "check the deploy every 5 minutes", "keep running /babysit-prs"). Do NOT invoke for one-off tasks.',
     argumentHint: '[interval] <prompt>',

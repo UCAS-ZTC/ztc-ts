@@ -57,6 +57,7 @@ import {
 } from '../../utils/plugins/validatePlugin.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
 import { plural } from '../../utils/stringUtils.js'
+import { uiText } from '../../utils/uiLocale.js'
 import { cliError, cliOk } from '../exit.js'
 
 // Re-export for main.tsx to reference in option definitions
@@ -67,14 +68,22 @@ export { VALID_INSTALLABLE_SCOPES, VALID_UPDATE_SCOPES }
  */
 export function handleMarketplaceError(error: unknown, action: string): never {
   logError(error)
-  cliError(`${figures.cross} Failed to ${action}: ${errorMessage(error)}`)
+  cliError(
+    uiText(
+      `${figures.cross} Failed to ${action}: ${errorMessage(error)}`,
+      `${figures.cross} 执行失败（${action}）：${errorMessage(error)}`,
+    ),
+  )
 }
 
 function printValidationResult(result: ValidationResult): void {
   if (result.errors.length > 0) {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.log(
-      `${figures.cross} Found ${result.errors.length} ${plural(result.errors.length, 'error')}:\n`,
+      uiText(
+        `${figures.cross} Found ${result.errors.length} ${plural(result.errors.length, 'error')}:\n`,
+        `${figures.cross} 发现 ${result.errors.length} 个错误：\n`,
+      ),
     )
     result.errors.forEach(error => {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
@@ -86,7 +95,10 @@ function printValidationResult(result: ValidationResult): void {
   if (result.warnings.length > 0) {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.log(
-      `${figures.warning} Found ${result.warnings.length} ${plural(result.warnings.length, 'warning')}:\n`,
+      uiText(
+        `${figures.warning} Found ${result.warnings.length} ${plural(result.warnings.length, 'warning')}:\n`,
+        `${figures.warning} 发现 ${result.warnings.length} 个警告：\n`,
+      ),
     )
     result.warnings.forEach(warning => {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
@@ -107,7 +119,12 @@ export async function pluginValidateHandler(
     const result = await validateManifest(manifestPath)
 
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log(`Validating ${result.fileType} manifest: ${result.filePath}\n`)
+    console.log(
+      uiText(
+        `Validating ${result.fileType} manifest: ${result.filePath}\n`,
+        `正在校验 ${result.fileType} 清单：${result.filePath}\n`,
+      ),
+    )
     printValidationResult(result)
 
     // If this is a plugin manifest located inside a .claude-plugin directory,
@@ -121,7 +138,12 @@ export async function pluginValidateHandler(
         contentResults = await validatePluginContents(dirname(manifestDir))
         for (const r of contentResults) {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`Validating ${r.fileType}: ${r.filePath}\n`)
+          console.log(
+            uiText(
+              `Validating ${r.fileType}: ${r.filePath}\n`,
+              `正在校验 ${r.fileType}：${r.filePath}\n`,
+            ),
+          )
           printValidationResult(r)
         }
       }
@@ -135,19 +157,28 @@ export async function pluginValidateHandler(
     if (allSuccess) {
       cliOk(
         hasWarnings
-          ? `${figures.tick} Validation passed with warnings`
-          : `${figures.tick} Validation passed`,
+          ? uiText(
+              `${figures.tick} Validation passed with warnings`,
+              `${figures.tick} 校验通过（含警告）`,
+            )
+          : uiText(
+              `${figures.tick} Validation passed`,
+              `${figures.tick} 校验通过`,
+            ),
       )
     } else {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`${figures.cross} Validation failed`)
+      console.log(uiText(`${figures.cross} Validation failed`, `${figures.cross} 校验失败`))
       process.exit(1)
     }
   } catch (error) {
     logError(error)
     // biome-ignore lint/suspicious/noConsole:: intentional console output
     console.error(
-      `${figures.cross} Unexpected error during validation: ${errorMessage(error)}`,
+      uiText(
+        `${figures.cross} Unexpected error during validation: ${errorMessage(error)}`,
+        `${figures.cross} 校验时发生未预期错误：${errorMessage(error)}`,
+      ),
     )
     process.exit(2)
   }
@@ -352,14 +383,17 @@ export async function pluginListHandler(options: {
     // through to the session section so the failure is visible.
     if (inlineLoadErrors.length === 0) {
       cliOk(
-        'No plugins installed. Use `claude plugin install` to install a plugin.',
+        uiText(
+          'No plugins installed. Use `claude plugin install` to install a plugin.',
+          '尚未安装任何插件。可使用 `claude plugin install` 安装插件。',
+        ),
       )
     }
   }
 
   if (pluginIds.length > 0) {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log('Installed plugins:\n')
+    console.log(uiText('Installed plugins:\n', '已安装插件：\n'))
   }
 
   for (const pluginId of pluginIds.sort()) {
@@ -376,24 +410,26 @@ export async function pluginListHandler(options: {
       const isEnabled = enabledPlugins.has(pluginId)
       const status =
         pluginErrors.length > 0
-          ? `${figures.cross} failed to load`
+          ? uiText(`${figures.cross} failed to load`, `${figures.cross} 加载失败`)
           : isEnabled
-            ? `${figures.tick} enabled`
-            : `${figures.cross} disabled`
+            ? uiText(`${figures.tick} enabled`, `${figures.tick} 已启用`)
+            : uiText(`${figures.cross} disabled`, `${figures.cross} 已禁用`)
       const version = installation.version || 'unknown'
       const scope = installation.scope
 
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.log(`  ${figures.pointer} ${pluginId}`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Version: ${version}`)
+      console.log(`${uiText('    Version', '    版本')}: ${version}`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Scope: ${scope}`)
+      console.log(`${uiText('    Scope', '    作用域')}: ${scope}`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Status: ${status}`)
+      console.log(`${uiText('    Status', '    状态')}: ${status}`)
       for (const error of pluginErrors) {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
-        console.log(`    Error: ${getPluginErrorMessage(error)}`)
+        console.log(
+          `${uiText('    Error', '    错误')}: ${getPluginErrorMessage(error)}`,
+        )
       }
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.log('')
@@ -402,7 +438,12 @@ export async function pluginListHandler(options: {
 
   if (inlinePlugins.length > 0 || inlineLoadErrors.length > 0) {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log('Session-only plugins (--plugin-dir):\n')
+    console.log(
+      uiText(
+        'Session-only plugins (--plugin-dir):\n',
+        '仅当前会话插件（--plugin-dir）：\n',
+      ),
+    )
     for (const p of inlinePlugins) {
       // Same dirName≠manifestName fallback as the JSON path above — error
       // sources use the dir basename but p.source uses the manifest name.
@@ -411,19 +452,23 @@ export async function pluginListHandler(options: {
       )
       const status =
         pErrors.length > 0
-          ? `${figures.cross} loaded with errors`
-          : `${figures.tick} loaded`
+          ? uiText(`${figures.cross} loaded with errors`, `${figures.cross} 已加载（含错误）`)
+          : uiText(`${figures.tick} loaded`, `${figures.tick} 已加载`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.log(`  ${figures.pointer} ${p.source}`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Version: ${p.manifest.version ?? 'unknown'}`)
+      console.log(
+        `${uiText('    Version', '    版本')}: ${p.manifest.version ?? 'unknown'}`,
+      )
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Path: ${p.path}`)
+      console.log(`${uiText('    Path', '    路径')}: ${p.path}`)
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`    Status: ${status}`)
+      console.log(`${uiText('    Status', '    状态')}: ${status}`)
       for (const e of pErrors) {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
-        console.log(`    Error: ${getPluginErrorMessage(e)}`)
+        console.log(
+          `${uiText('    Error', '    错误')}: ${getPluginErrorMessage(e)}`,
+        )
       }
       // biome-ignore lint/suspicious/noConsole:: intentional console output
       console.log('')
@@ -454,7 +499,10 @@ export async function marketplaceAddHandler(
 
     if (!parsed) {
       cliError(
-        `${figures.cross} Invalid marketplace source format. Try: owner/repo, https://..., or ./path`,
+        uiText(
+          `${figures.cross} Invalid marketplace source format. Try: owner/repo, https://..., or ./path`,
+          `${figures.cross} 插件市场来源格式无效。请使用：owner/repo、https://... 或 ./path`,
+        ),
       )
     }
 
@@ -466,7 +514,10 @@ export async function marketplaceAddHandler(
     const scope = options.scope ?? 'user'
     if (scope !== 'user' && scope !== 'project' && scope !== 'local') {
       cliError(
-        `${figures.cross} Invalid scope '${scope}'. Use: user, project, or local`,
+        uiText(
+          `${figures.cross} Invalid scope '${scope}'. Use: user, project, or local`,
+          `${figures.cross} 无效作用域 '${scope}'。可选：user、project、local`,
+        ),
       )
     }
     const settingSource = scopeToSettingSource(scope)
@@ -484,13 +535,16 @@ export async function marketplaceAddHandler(
         }
       } else {
         cliError(
-          `${figures.cross} --sparse is only supported for github and git marketplace sources (got: ${marketplaceSource.source})`,
+          uiText(
+            `${figures.cross} --sparse is only supported for github and git marketplace sources (got: ${marketplaceSource.source})`,
+            `${figures.cross} --sparse 仅支持 github 与 git 类型市场源（当前：${marketplaceSource.source}）`,
+          ),
         )
       }
     }
 
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log('Adding marketplace...')
+    console.log(uiText('Adding marketplace...', '正在添加插件市场...'))
 
     const { name, alreadyMaterialized, resolvedSource } =
       await addMarketplaceSource(marketplaceSource, message => {
@@ -515,11 +569,17 @@ export async function marketplaceAddHandler(
 
     cliOk(
       alreadyMaterialized
-        ? `${figures.tick} Marketplace '${name}' already on disk — declared in ${scope} settings`
-        : `${figures.tick} Successfully added marketplace: ${name} (declared in ${scope} settings)`,
+        ? uiText(
+            `${figures.tick} Marketplace '${name}' already on disk — declared in ${scope} settings`,
+            `${figures.tick} 插件市场 '${name}' 已存在于本地磁盘，并已写入 ${scope} 设置`,
+          )
+        : uiText(
+            `${figures.tick} Successfully added marketplace: ${name} (declared in ${scope} settings)`,
+            `${figures.tick} 已成功添加插件市场：${name}（已写入 ${scope} 设置）`,
+          ),
     )
   } catch (error) {
-    handleMarketplaceError(error, 'add marketplace')
+    handleMarketplaceError(error, '添加插件市场')
   }
 }
 
@@ -552,11 +612,11 @@ export async function marketplaceListHandler(options: {
     }
 
     if (names.length === 0) {
-      cliOk('No marketplaces configured')
+      cliOk(uiText('No marketplaces configured', '尚未配置插件市场'))
     }
 
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log('Configured marketplaces:\n')
+    console.log(uiText('Configured marketplaces:\n', '已配置插件市场：\n'))
     names.forEach(name => {
       const marketplace = config[name]
       // biome-ignore lint/suspicious/noConsole:: intentional console output
@@ -566,19 +626,23 @@ export async function marketplaceListHandler(options: {
         const src = marketplace.source
         if (src.source === 'github') {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`    Source: GitHub (${src.repo})`)
+          console.log(`${uiText('    Source', '    来源')}: GitHub (${src.repo})`)
         } else if (src.source === 'git') {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`    Source: Git (${src.url})`)
+          console.log(`${uiText('    Source', '    来源')}: Git (${src.url})`)
         } else if (src.source === 'url') {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`    Source: URL (${src.url})`)
+          console.log(`${uiText('    Source', '    来源')}: URL (${src.url})`)
         } else if (src.source === 'directory') {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`    Source: Directory (${src.path})`)
+          console.log(
+            `${uiText('    Source', '    来源')}: ${uiText('Directory', '目录')} (${src.path})`,
+          )
         } else if (src.source === 'file') {
           // biome-ignore lint/suspicious/noConsole:: intentional console output
-          console.log(`    Source: File (${src.path})`)
+          console.log(
+            `${uiText('    Source', '    来源')}: ${uiText('File', '文件')} (${src.path})`,
+          )
         }
       }
       // biome-ignore lint/suspicious/noConsole:: intentional console output
@@ -587,7 +651,7 @@ export async function marketplaceListHandler(options: {
 
     cliOk()
   } catch (error) {
-    handleMarketplaceError(error, 'list marketplaces')
+    handleMarketplaceError(error, '列出插件市场')
   }
 }
 
@@ -606,9 +670,14 @@ export async function marketplaceRemoveHandler(
         name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
 
-    cliOk(`${figures.tick} Successfully removed marketplace: ${name}`)
+    cliOk(
+      uiText(
+        `${figures.tick} Successfully removed marketplace: ${name}`,
+        `${figures.tick} 已成功移除插件市场：${name}`,
+      ),
+    )
   } catch (error) {
-    handleMarketplaceError(error, 'remove marketplace')
+    handleMarketplaceError(error, '移除插件市场')
   }
 }
 
@@ -621,7 +690,9 @@ export async function marketplaceUpdateHandler(
   try {
     if (name) {
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`Updating marketplace: ${name}...`)
+      console.log(
+        uiText(`Updating marketplace: ${name}...`, `正在更新插件市场：${name}...`),
+      )
 
       await refreshMarketplace(name, message => {
         // biome-ignore lint/suspicious/noConsole:: intentional console output
@@ -635,17 +706,27 @@ export async function marketplaceUpdateHandler(
           name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
 
-      cliOk(`${figures.tick} Successfully updated marketplace: ${name}`)
+      cliOk(
+        uiText(
+          `${figures.tick} Successfully updated marketplace: ${name}`,
+          `${figures.tick} 已成功更新插件市场：${name}`,
+        ),
+      )
     } else {
       const config = await loadKnownMarketplacesConfig()
       const marketplaceNames = Object.keys(config)
 
       if (marketplaceNames.length === 0) {
-        cliOk('No marketplaces configured')
+        cliOk(uiText('No marketplaces configured', '尚未配置插件市场'))
       }
 
       // biome-ignore lint/suspicious/noConsole:: intentional console output
-      console.log(`Updating ${marketplaceNames.length} marketplace(s)...`)
+      console.log(
+        uiText(
+          `Updating ${marketplaceNames.length} marketplace(s)...`,
+          `正在更新 ${marketplaceNames.length} 个插件市场...`,
+        ),
+      )
 
       await refreshAllMarketplaces()
       clearAllCaches()
@@ -656,11 +737,14 @@ export async function marketplaceUpdateHandler(
       })
 
       cliOk(
-        `${figures.tick} Successfully updated ${marketplaceNames.length} marketplace(s)`,
+        uiText(
+          `${figures.tick} Successfully updated ${marketplaceNames.length} marketplace(s)`,
+          `${figures.tick} 已成功更新 ${marketplaceNames.length} 个插件市场`,
+        ),
       )
     }
   } catch (error) {
-    handleMarketplaceError(error, 'update marketplace(s)')
+    handleMarketplaceError(error, '更新插件市场')
   }
 }
 
@@ -672,7 +756,7 @@ export async function pluginInstallHandler(
   if (options.cowork) setUseCoworkPlugins(true)
   const scope = options.scope || 'user'
   if (options.cowork && scope !== 'user') {
-    cliError('--cowork can only be used with user scope')
+    cliError('--cowork 只能与 user 作用域一起使用')
   }
   if (
     !VALID_INSTALLABLE_SCOPES.includes(
@@ -680,7 +764,7 @@ export async function pluginInstallHandler(
     )
   ) {
     cliError(
-      `Invalid scope: ${scope}. Must be one of: ${VALID_INSTALLABLE_SCOPES.join(', ')}.`,
+      `无效作用域：${scope}。可选值：${VALID_INSTALLABLE_SCOPES.join(', ')}。`,
     )
   }
   // _PROTO_* routes to PII-tagged plugin_name/marketplace_name BQ columns.
@@ -708,7 +792,7 @@ export async function pluginUninstallHandler(
   if (options.cowork) setUseCoworkPlugins(true)
   const scope = options.scope || 'user'
   if (options.cowork && scope !== 'user') {
-    cliError('--cowork can only be used with user scope')
+    cliError('--cowork 只能与 user 作用域一起使用')
   }
   if (
     !VALID_INSTALLABLE_SCOPES.includes(
@@ -716,7 +800,7 @@ export async function pluginUninstallHandler(
     )
   ) {
     cliError(
-      `Invalid scope: ${scope}. Must be one of: ${VALID_INSTALLABLE_SCOPES.join(', ')}.`,
+      `无效作用域：${scope}。可选值：${VALID_INSTALLABLE_SCOPES.join(', ')}。`,
     )
   }
   const { name, marketplace } = parsePluginIdentifier(plugin)
@@ -750,13 +834,13 @@ export async function pluginEnableHandler(
       )
     ) {
       cliError(
-        `Invalid scope "${options.scope}". Valid scopes: ${VALID_INSTALLABLE_SCOPES.join(', ')}`,
+        `无效作用域 "${options.scope}"。可选作用域：${VALID_INSTALLABLE_SCOPES.join(', ')}`,
       )
     }
     scope = options.scope as (typeof VALID_INSTALLABLE_SCOPES)[number]
   }
   if (options.cowork && scope !== undefined && scope !== 'user') {
-    cliError('--cowork can only be used with user scope')
+    cliError('--cowork 只能与 user 作用域一起使用')
   }
 
   // --cowork always operates at user scope
@@ -784,18 +868,18 @@ export async function pluginDisableHandler(
   options: { scope?: string; cowork?: boolean; all?: boolean },
 ): Promise<void> {
   if (options.all && plugin) {
-    cliError('Cannot use --all with a specific plugin')
+    cliError('指定插件名时不能同时使用 --all')
   }
 
   if (!options.all && !plugin) {
-    cliError('Please specify a plugin name or use --all to disable all plugins')
+    cliError('请指定插件名，或使用 --all 禁用全部插件')
   }
 
   if (options.cowork) setUseCoworkPlugins(true)
 
   if (options.all) {
     if (options.scope) {
-      cliError('Cannot use --scope with --all')
+      cliError('--all 不能与 --scope 同时使用')
     }
 
     // No _PROTO_plugin_name here — --all disables all plugins.
@@ -814,13 +898,13 @@ export async function pluginDisableHandler(
       )
     ) {
       cliError(
-        `Invalid scope "${options.scope}". Valid scopes: ${VALID_INSTALLABLE_SCOPES.join(', ')}`,
+        `无效作用域 "${options.scope}"。可选作用域：${VALID_INSTALLABLE_SCOPES.join(', ')}`,
       )
     }
     scope = options.scope as (typeof VALID_INSTALLABLE_SCOPES)[number]
   }
   if (options.cowork && scope !== undefined && scope !== 'user') {
-    cliError('--cowork can only be used with user scope')
+    cliError('--cowork 只能与 user 作用域一起使用')
   }
 
   // --cowork always operates at user scope
@@ -865,13 +949,13 @@ export async function pluginUpdateHandler(
       )
     ) {
       cliError(
-        `Invalid scope "${options.scope}". Valid scopes: ${VALID_UPDATE_SCOPES.join(', ')}`,
+        `无效作用域 "${options.scope}"。可选作用域：${VALID_UPDATE_SCOPES.join(', ')}`,
       )
     }
     scope = options.scope as (typeof VALID_UPDATE_SCOPES)[number]
   }
   if (options.cowork && scope !== 'user') {
-    cliError('--cowork can only be used with user scope')
+    cliError('--cowork 只能与 user 作用域一起使用')
   }
 
   await updatePluginCli(plugin, scope)

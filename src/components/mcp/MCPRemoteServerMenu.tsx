@@ -19,6 +19,7 @@ import { openBrowser } from '../../utils/browser.js';
 import { errorMessage } from '../../utils/errors.js';
 import { logMCPDebug } from '../../utils/log.js';
 import { capitalize } from '../../utils/stringUtils.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js';
 import { Select } from '../CustomSelect/index.js';
 import { Byline } from '../design-system/Byline.js';
@@ -100,11 +101,11 @@ export function MCPRemoteServerMenu({
         success
       });
       if (success) {
-        onComplete?.(`Authentication successful. Connected to ${server.name}.`);
+        onComplete?.(uiText(`Authentication successful. Connected to ${server.name}.`, `认证成功。已连接到 ${server.name}。`));
       } else if (result.client.type === 'needs-auth') {
-        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+        onComplete?.(uiText('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.', '认证成功，但服务器仍然需要认证。你可能需要手动重启 Claude Code。'));
       } else {
-        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+        onComplete?.(uiText('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.', '认证成功，但服务器重新连接失败。你可能需要手动重启 Claude Code 使更改生效。'));
       }
     } catch (err) {
       logEvent('tengu_claudeai_mcp_auth_completed', {
@@ -140,7 +141,7 @@ export function MCPRemoteServerMenu({
       };
     });
     logEvent('tengu_claudeai_mcp_clear_auth_completed', {});
-    onComplete?.(`Disconnected from ${server.name}.`);
+    onComplete?.(uiText(`Disconnected from ${server.name}.`, `已断开与 ${server.name} 的连接。`));
     setIsClaudeAIClearingAuth(false);
     setClaudeAIClearAuthUrl(null);
     setClaudeAIClearAuthBrowserOpened(false);
@@ -250,7 +251,7 @@ export function MCPRemoteServerMenu({
       onCancel();
     } catch (err_0) {
       const action = wasEnabled ? 'disable' : 'enable';
-      onComplete?.(`Failed to ${action} MCP server '${server.name}': ${errorMessage(err_0)}`);
+      onComplete?.(uiText(`Failed to ${action} MCP server '${server.name}': ${errorMessage(err_0)}`, `${action === 'disable' ? '禁用' : '启用'} MCP 服务器“${server.name}”失败：${errorMessage(err_0)}`));
     }
   }, [server.client.type, server.config.type, server.name, toggleMcpServer, onCancel, onComplete]);
   const handleAuthenticate = React.useCallback(async () => {
@@ -278,14 +279,14 @@ export function MCPRemoteServerMenu({
         });
         const result_0 = await reconnectMcpServer(server.name);
         if (result_0.client.type === 'connected') {
-          const message = isEffectivelyAuthenticated ? `Authentication successful. Reconnected to ${server.name}.` : `Authentication successful. Connected to ${server.name}.`;
+          const message = isEffectivelyAuthenticated ? uiText(`Authentication successful. Reconnected to ${server.name}.`, `认证成功。已重新连接到 ${server.name}。`) : uiText(`Authentication successful. Connected to ${server.name}.`, `认证成功。已连接到 ${server.name}。`);
           onComplete?.(message);
         } else if (result_0.client.type === 'needs-auth') {
-          onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+          onComplete?.(uiText('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.', '认证成功，但服务器仍然需要认证。你可能需要手动重启 Claude Code。'));
         } else {
           // result.client.type === 'failed'
           logMCPDebug(server.name, `Reconnection failed after authentication`);
-          onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+          onComplete?.(uiText('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.', '认证成功，但服务器重新连接失败。你可能需要手动重启 Claude Code 使更改生效。'));
         }
       }
     } catch (err_1) {
@@ -335,16 +336,16 @@ export function MCPRemoteServerMenu({
           }
         };
       });
-      onComplete?.(`Authentication cleared for ${server.name}.`);
+      onComplete?.(uiText(`Authentication cleared for ${server.name}.`, `已清除 ${server.name} 的认证信息。`));
     }
   };
   if (isAuthenticating) {
     // XAA: silent exchange (cached id_token → no browser), so don't claim
     // one will open. If IdP login IS needed, authorizationUrl populates and
     // the URL fallback block below still renders.
-    const authCopy = server.config.type !== 'claudeai-proxy' && server.config.oauth?.xaa ? ' Authenticating via your identity provider' : ' A browser window will open for authentication';
+    const authCopy = server.config.type !== 'claudeai-proxy' && server.config.oauth?.xaa ? uiText(' Authenticating via your identity provider', ' 正在通过你的身份提供方进行认证') : uiText(' A browser window will open for authentication', ' 将打开浏览器进行认证');
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Authenticating with {server.name}…</Text>
+        <Text color="claude">{uiText('Authenticating with ', '正在与 ')}{server.name}…</Text>
         <Box>
           <Spinner />
           <Text>{authCopy}</Text>
@@ -352,19 +353,18 @@ export function MCPRemoteServerMenu({
         {authorizationUrl && <Box flexDirection="column">
             <Box>
               <Text dimColor>
-                If your browser doesn&apos;t open automatically, copy this URL
-                manually{' '}
+                {uiText('If your browser doesn&apos;t open automatically, copy this URL manually', '如果浏览器未自动打开，请手动复制这个 URL')}
+                {' '}
               </Text>
-              {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                  <KeyboardShortcutHint shortcut="c" action="copy" parens />
+              {urlCopied ? <Text color="success">{uiText('(Copied!)', '（已复制）')}</Text> : <Text dimColor>
+                  <KeyboardShortcutHint shortcut="c" action={uiText('copy', '复制')} parens />
                 </Text>}
             </Box>
             <Link url={authorizationUrl} />
           </Box>}
         {isAuthenticating && authorizationUrl && manualCallbackSubmit && <Box flexDirection="column" marginTop={1}>
             <Text dimColor>
-              If the redirect page shows a connection error, paste the URL from
-              your browser&apos;s address bar:
+              {uiText('If the redirect page shows a connection error, paste the URL from your browser&apos;s address bar:', '如果重定向页面显示连接错误，请粘贴浏览器地址栏中的 URL：')}
             </Text>
             <Box>
               <Text dimColor>URL {'>'} </Text>
@@ -376,80 +376,77 @@ export function MCPRemoteServerMenu({
           </Box>}
         <Box marginLeft={3}>
           <Text dimColor>
-            Return here after authenticating in your browser. Press Esc to go
-            back.
+            {uiText('Return here after authenticating in your browser. Press Esc to go back.', '完成浏览器认证后返回此处。按 Esc 返回。')}
           </Text>
         </Box>
       </Box>;
   }
   if (isClaudeAIAuthenticating) {
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Authenticating with {server.name}…</Text>
+        <Text color="claude">{uiText('Authenticating with ', '正在与 ')}{server.name}…</Text>
         <Box>
           <Spinner />
-          <Text> A browser window will open for authentication</Text>
+          <Text>{uiText(' A browser window will open for authentication', ' 将打开浏览器进行认证')}</Text>
         </Box>
         {claudeAIAuthUrl && <Box flexDirection="column">
             <Box>
               <Text dimColor>
-                If your browser doesn&apos;t open automatically, copy this URL
-                manually{' '}
+                {uiText('If your browser doesn&apos;t open automatically, copy this URL manually', '如果浏览器未自动打开，请手动复制这个 URL')}
+                {' '}
               </Text>
-              {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                  <KeyboardShortcutHint shortcut="c" action="copy" parens />
+              {urlCopied ? <Text color="success">{uiText('(Copied!)', '（已复制）')}</Text> : <Text dimColor>
+                  <KeyboardShortcutHint shortcut="c" action={uiText('copy', '复制')} parens />
                 </Text>}
             </Box>
             <Link url={claudeAIAuthUrl} />
           </Box>}
         <Box marginLeft={3} flexDirection="column">
           <Text color="permission">
-            Press <Text bold>Enter</Text> after authenticating in your browser.
+            {uiText('Press ', '请按 ')}<Text bold>Enter</Text>{uiText(' after authenticating in your browser.', '，在浏览器完成认证后继续。')}
           </Text>
           <Text dimColor italic>
-            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+            <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('back', '返回')} />
           </Text>
         </Box>
       </Box>;
   }
   if (isClaudeAIClearingAuth) {
     return <Box flexDirection="column" gap={1} padding={1}>
-        <Text color="claude">Clear authentication for {server.name}</Text>
+        <Text color="claude">{uiText('Clear authentication for ', '清除以下服务器的认证：')}{server.name}</Text>
         {claudeAIClearAuthBrowserOpened ? <>
             <Text>
-              Find the MCP server in the browser and click
-              &quot;Disconnect&quot;.
+              {uiText('Find the MCP server in the browser and click "Disconnect".', '请在浏览器中找到该 MCP 服务器并点击“断开连接”。')}
             </Text>
             {claudeAIClearAuthUrl && <Box flexDirection="column">
                 <Box>
                   <Text dimColor>
-                    If your browser didn&apos;t open automatically, copy this
-                    URL manually{' '}
+                    {uiText('If your browser didn&apos;t open automatically, copy this URL manually', '如果浏览器未自动打开，请手动复制这个 URL')}
+                    {' '}
                   </Text>
-                  {urlCopied ? <Text color="success">(Copied!)</Text> : <Text dimColor>
-                      <KeyboardShortcutHint shortcut="c" action="copy" parens />
+                  {urlCopied ? <Text color="success">{uiText('(Copied!)', '（已复制）')}</Text> : <Text dimColor>
+                      <KeyboardShortcutHint shortcut="c" action={uiText('copy', '复制')} parens />
                     </Text>}
                 </Box>
                 <Link url={claudeAIClearAuthUrl} />
               </Box>}
             <Box marginLeft={3} flexDirection="column">
               <Text color="permission">
-                Press <Text bold>Enter</Text> when done.
+                {uiText('Press ', '完成后按 ')}<Text bold>Enter</Text>{uiText(' when done.', '。')}
               </Text>
               <Text dimColor italic>
-                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('back', '返回')} />
               </Text>
             </Box>
           </> : <>
             <Text>
-              This will open claude.ai in the browser. Find the MCP server in
-              the list and click &quot;Disconnect&quot;.
+              {uiText('This will open claude.ai in the browser. Find the MCP server in the list and click "Disconnect".', '这会在浏览器中打开 claude.ai。请在列表中找到该 MCP 服务器并点击“断开连接”。')}
             </Text>
             <Box marginLeft={3} flexDirection="column">
               <Text color="permission">
-                Press <Text bold>Enter</Text> to open the browser.
+                {uiText('Press ', '请按 ')}<Text bold>Enter</Text>{uiText(' to open the browser.', ' 打开浏览器。')}
               </Text>
               <Text dimColor italic>
-                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+                <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('back', '返回')} />
               </Text>
             </Box>
           </>}
@@ -458,13 +455,13 @@ export function MCPRemoteServerMenu({
   if (isReconnecting) {
     return <Box flexDirection="column" gap={1} padding={1}>
         <Text color="text">
-          Connecting to <Text bold>{server.name}</Text>…
+          {uiText('Connecting to ', '正在连接 ')}<Text bold>{server.name}</Text>…
         </Text>
         <Box>
           <Spinner />
-          <Text> Establishing connection to MCP server</Text>
+          <Text>{uiText(' Establishing connection to MCP server', ' 正在建立 MCP 服务器连接')}</Text>
         </Box>
-        <Text dimColor>This may take a few moments.</Text>
+        <Text dimColor>{uiText('This may take a few moments.', '这可能需要一点时间。')}</Text>
       </Box>;
   }
   const menuOptions = [];
@@ -472,42 +469,42 @@ export function MCPRemoteServerMenu({
   // If server is disabled, show Enable first as the primary action
   if (server.client.type === 'disabled') {
     menuOptions.push({
-      label: 'Enable',
+      label: uiText('Enable', '启用'),
       value: 'toggle-enabled'
     });
   }
   if (server.client.type === 'connected' && serverToolsCount > 0) {
     menuOptions.push({
-      label: 'View tools',
+      label: uiText('View tools', '查看工具'),
       value: 'tools'
     });
   }
   if (server.config.type === 'claudeai-proxy') {
     if (server.client.type === 'connected') {
       menuOptions.push({
-        label: 'Clear authentication',
+        label: uiText('Clear authentication', '清除认证'),
         value: 'claudeai-clear-auth'
       });
     } else if (server.client.type !== 'disabled') {
       menuOptions.push({
-        label: 'Authenticate',
+        label: uiText('Authenticate', '认证'),
         value: 'claudeai-auth'
       });
     }
   } else {
     if (isEffectivelyAuthenticated) {
       menuOptions.push({
-        label: 'Re-authenticate',
+        label: uiText('Re-authenticate', '重新认证'),
         value: 'reauth'
       });
       menuOptions.push({
-        label: 'Clear authentication',
+        label: uiText('Clear authentication', '清除认证'),
         value: 'clear-auth'
       });
     }
     if (!isEffectivelyAuthenticated) {
       menuOptions.push({
-        label: 'Authenticate',
+        label: uiText('Authenticate', '认证'),
         value: 'auth'
       });
     }
@@ -515,12 +512,12 @@ export function MCPRemoteServerMenu({
   if (server.client.type !== 'disabled') {
     if (server.client.type !== 'needs-auth') {
       menuOptions.push({
-        label: 'Reconnect',
+        label: uiText('Reconnect', '重新连接'),
         value: 'reconnectMcpServer'
       });
     }
     menuOptions.push({
-      label: 'Disable',
+      label: uiText('Disable', '禁用'),
       value: 'toggle-enabled'
     });
   }
@@ -528,57 +525,56 @@ export function MCPRemoteServerMenu({
   // If there are no other options, add a back option so Select handles escape
   if (menuOptions.length === 0) {
     menuOptions.push({
-      label: 'Back',
+      label: uiText('Back', '返回'),
       value: 'back'
     });
   }
   return <Box flexDirection="column">
       <Box flexDirection="column" paddingX={1} borderStyle={borderless ? undefined : 'round'}>
         <Box marginBottom={1}>
-          <Text bold>{capitalizedServerName} MCP Server</Text>
+          <Text bold>{uiText(`${capitalizedServerName} MCP Server`, `${capitalizedServerName} MCP 服务器`)}</Text>
         </Box>
 
         <Box flexDirection="column" gap={0}>
           <Box>
-            <Text bold>Status: </Text>
-            {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} disabled</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} connected</Text> : server.client.type === 'pending' ? <>
+            <Text bold>{uiText('Status: ', '状态：')}</Text>
+            {server.client.type === 'disabled' ? <Text>{color('inactive', theme)(figures.radioOff)} {uiText('disabled', '已禁用')}</Text> : server.client.type === 'connected' ? <Text>{color('success', theme)(figures.tick)} {uiText('connected', '已连接')}</Text> : server.client.type === 'pending' ? <>
                 <Text dimColor>{figures.radioOff}</Text>
-                <Text> connecting…</Text>
+                <Text> {uiText('connecting…', '连接中…')}</Text>
               </> : server.client.type === 'needs-auth' ? <Text>
-                {color('warning', theme)(figures.triangleUpOutline)} needs
-                authentication
-              </Text> : <Text>{color('error', theme)(figures.cross)} failed</Text>}
+                {color('warning', theme)(figures.triangleUpOutline)} {uiText('needs authentication', '需要认证')}
+              </Text> : <Text>{color('error', theme)(figures.cross)} {uiText('failed', '失败')}</Text>}
           </Box>
 
           {server.transport !== 'claudeai-proxy' && <Box>
-              <Text bold>Auth: </Text>
+              <Text bold>{uiText('Auth: ', '认证：')}</Text>
               {isEffectivelyAuthenticated ? <Text>
-                  {color('success', theme)(figures.tick)} authenticated
+                  {color('success', theme)(figures.tick)} {uiText('authenticated', '已认证')}
                 </Text> : <Text>
-                  {color('error', theme)(figures.cross)} not authenticated
+                  {color('error', theme)(figures.cross)} {uiText('not authenticated', '未认证')}
                 </Text>}
             </Box>}
 
           <Box>
-            <Text bold>URL: </Text>
+            <Text bold>{uiText('URL: ', 'URL：')}</Text>
             <Text dimColor>{server.config.url}</Text>
           </Box>
 
           <Box>
-            <Text bold>Config location: </Text>
+            <Text bold>{uiText('Config location: ', '配置位置：')}</Text>
             <Text dimColor>{describeMcpConfigFilePath(server.scope)}</Text>
           </Box>
 
           {server.client.type === 'connected' && <CapabilitiesSection serverToolsCount={serverToolsCount} serverPromptsCount={serverCommandsCount} serverResourcesCount={mcp.resources[server.name]?.length || 0} />}
 
           {server.client.type === 'connected' && serverToolsCount > 0 && <Box>
-              <Text bold>Tools: </Text>
-              <Text dimColor>{serverToolsCount} tools</Text>
+              <Text bold>{uiText('Tools: ', '工具：')}</Text>
+              <Text dimColor>{uiText(`${serverToolsCount} tools`, `${serverToolsCount} 个工具`)}</Text>
             </Box>}
         </Box>
 
         {error && <Box marginTop={1}>
-            <Text color="error">Error: {error}</Text>
+            <Text color="error">{uiText('Error: ', '错误：')}{error}</Text>
           </Box>}
 
         {menuOptions.length > 0 && <Box marginTop={1}>
@@ -637,10 +633,10 @@ export function MCPRemoteServerMenu({
 
       <Box marginTop={1}>
         <Text dimColor italic>
-          {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <Byline>
-              <KeyboardShortcutHint shortcut="↑↓" action="navigate" />
-              <KeyboardShortcutHint shortcut="Enter" action="select" />
-              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description="back" />
+          {exitState.pending ? <>{uiText('Press ', '再次按 ')}{exitState.keyName}{uiText(' again to exit', ' 退出')}</> : <Byline>
+              <KeyboardShortcutHint shortcut="↑↓" action={uiText('navigate', '导航')} />
+              <KeyboardShortcutHint shortcut="Enter" action={uiText('select', '选择')} />
+              <ConfigurableShortcutHint action="confirm:no" context="Confirmation" fallback="Esc" description={uiText('back', '返回')} />
             </Byline>}
         </Text>
       </Box>

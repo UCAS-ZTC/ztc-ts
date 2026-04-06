@@ -265,7 +265,7 @@ function SpinnerWithVerbInner({
     if (budget !== null && budget > 0) {
       const tokens = getTurnOutputTokens();
       if (tokens >= budget) {
-        budgetText = `Target: ${formatNumber(tokens)} used (${formatNumber(budget)} min ${figures.tick})`;
+        budgetText = `目标: 已用 ${formatNumber(tokens)}（最低 ${formatNumber(budget)} ${figures.tick}）`;
       } else {
         const pct = Math.round(tokens / budget * 100);
         const remaining = budget - tokens;
@@ -273,7 +273,7 @@ function SpinnerWithVerbInner({
         const eta = rate > 0 ? ` \u00B7 ~${formatDuration(remaining / rate, {
           mostSignificantOnly: true
         })}` : '';
-        budgetText = `Target: ${formatNumber(tokens)} / ${formatNumber(budget)} (${pct}%)${eta}`;
+        budgetText = `目标: ${formatNumber(tokens)} / ${formatNumber(budget)} (${pct}%)${eta}`;
       }
     }
   }

@@ -190,9 +190,9 @@ import stats from './commands/stats/index.js'
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: '生成 Claude Code 会话分析报告',
   contentLength: 0,
-  progressMessage: 'analyzing your sessions',
+  progressMessage: '正在分析您的会话',
   source: 'builtin',
   async getPromptForCommand(args, context) {
     const real = (await import('./commands/insights.js')).default
@@ -731,7 +731,7 @@ export function formatDescriptionWithSource(cmd: Command): string {
   }
 
   if (cmd.kind === 'workflow') {
-    return `${cmd.description} (workflow)`
+    return `${cmd.description} (工作流)`
   }
 
   if (cmd.source === 'plugin') {
@@ -739,7 +739,7 @@ export function formatDescriptionWithSource(cmd: Command): string {
     if (pluginName) {
       return `(${pluginName}) ${cmd.description}`
     }
-    return `${cmd.description} (plugin)`
+    return `${cmd.description} (插件)`
   }
 
   if (cmd.source === 'builtin' || cmd.source === 'mcp') {
@@ -747,7 +747,7 @@ export function formatDescriptionWithSource(cmd: Command): string {
   }
 
   if (cmd.source === 'bundled') {
-    return `${cmd.description} (bundled)`
+    return `${cmd.description} (内置)`
   }
 
   return `${cmd.description} (${getSettingSourceName(cmd.source)})`

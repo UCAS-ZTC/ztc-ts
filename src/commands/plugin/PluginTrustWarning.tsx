@@ -3,6 +3,7 @@ import figures from 'figures';
 import * as React from 'react';
 import { Box, Text } from '../../ink.js';
 import { getPluginTrustMessage } from '../../utils/plugins/marketplaceHelpers.js';
+import { uiText } from '../../utils/uiLocale.js';
 export function PluginTrustWarning() {
   const $ = _c(3);
   let t0;
@@ -22,7 +23,7 @@ export function PluginTrustWarning() {
   }
   let t2;
   if ($[2] === Symbol.for("react.memo_cache_sentinel")) {
-    t2 = <Box marginBottom={1}>{t1}<Text dimColor={true} italic={true}>Make sure you trust a plugin before installing, updating, or using it. Anthropic does not control what MCP servers, files, or other software are included in plugins and cannot verify that they will work as intended or that they won't change. See each plugin's homepage for more information.{customMessage ? ` ${customMessage}` : ""}</Text></Box>;
+    t2 = <Box marginBottom={1}>{t1}<Text dimColor={true} italic={true}>{uiText('Make sure you trust a plugin before installing, updating, or using it. Anthropic does not control what MCP servers, files, or other software are included in plugins and cannot verify that they will work as intended or that they will not change. See each plugin\'s homepage for more information.', '在安装、更新或使用插件之前，请确认你信任该插件。Anthropic 无法控制插件中包含的 MCP 服务器、文件或其他软件，也无法验证它们是否会按预期工作，或后续是否发生变化。更多信息请查看各插件主页。')}{customMessage ? ` ${customMessage}` : ""}</Text></Box>;
     $[2] = t2;
   } else {
     t2 = $[2];

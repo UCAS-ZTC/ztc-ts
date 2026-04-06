@@ -11,6 +11,7 @@ import { isChromeExtensionInstalled } from '../../utils/claudeInChrome/setup.js'
 import { getGlobalConfig, saveGlobalConfig } from '../../utils/config.js';
 import { env } from '../../utils/env.js';
 import { isRunningOnHomespace } from '../../utils/envUtils.js';
+import { uiText } from '../../utils/uiLocale.js';
 const CHROME_EXTENSION_URL = 'https://claude.ai/chrome';
 const CHROME_PERMISSIONS_URL = 'https://clau.de/chrome/permissions';
 const CHROME_RECONNECT_URL = 'https://clau.de/chrome/reconnect';
@@ -122,7 +123,7 @@ function ClaudeInChromeMenu(t0) {
       let t5;
       if ($[9] === Symbol.for("react.memo_cache_sentinel")) {
         t5 = {
-          label: "Install Chrome extension",
+          label: uiText('Install Chrome extension', '安装 Chrome 扩展'),
           value: "install-extension"
         };
         $[9] = t5;
@@ -133,7 +134,7 @@ function ClaudeInChromeMenu(t0) {
     }
     let t5;
     if ($[10] === Symbol.for("react.memo_cache_sentinel")) {
-      t5 = <Text>Manage permissions</Text>;
+      t5 = <Text>{uiText('Manage permissions', '管理权限')}</Text>;
       $[10] = t5;
     } else {
       t5 = $[10];
@@ -151,7 +152,7 @@ function ClaudeInChromeMenu(t0) {
     }
     let t7;
     if ($[13] === Symbol.for("react.memo_cache_sentinel")) {
-      t7 = <Text>Reconnect extension</Text>;
+      t7 = <Text>{uiText('Reconnect extension', '重新连接扩展')}</Text>;
       $[13] = t7;
     } else {
       t7 = $[13];
@@ -167,7 +168,7 @@ function ClaudeInChromeMenu(t0) {
     } else {
       t8 = $[15];
     }
-    const t9 = `Enabled by default: ${enabledByDefault ? "Yes" : "No"}`;
+    const t9 = uiText(`Enabled by default: ${enabledByDefault ? "Yes" : "No"}`, `默认启用：${enabledByDefault ? '是' : '否'}`);
     let t10;
     if ($[16] !== t9) {
       t10 = {
@@ -197,14 +198,14 @@ function ClaudeInChromeMenu(t0) {
   }
   let t6;
   if ($[20] === Symbol.for("react.memo_cache_sentinel")) {
-    t6 = <Text>Claude in Chrome works with the Chrome extension to let you control your browser directly from Claude Code. Navigate websites, fill forms, capture screenshots, record GIFs, and debug with console logs and network requests.</Text>;
+    t6 = <Text>{uiText('Claude in Chrome works with the Chrome extension to let you control your browser directly from Claude Code. Navigate websites, fill forms, capture screenshots, record GIFs, and debug with console logs and network requests.', 'Claude in Chrome 可与 Chrome 扩展协作，让你在 Claude Code 中直接控制浏览器。可用于浏览网页、填写表单、截图、录制 GIF，并结合控制台日志和网络请求调试。')}</Text>;
     $[20] = t6;
   } else {
     t6 = $[20];
   }
   let t7;
   if ($[21] !== isWSL) {
-    t7 = isWSL && <Text color="error">Claude in Chrome is not supported in WSL at this time.</Text>;
+    t7 = isWSL && <Text color="error">{uiText('Claude in Chrome is not supported in WSL at this time.', 'Claude in Chrome 当前不支持 WSL。')}</Text>;
     $[21] = isWSL;
     $[22] = t7;
   } else {
@@ -212,7 +213,7 @@ function ClaudeInChromeMenu(t0) {
   }
   let t8;
   if ($[23] !== isClaudeAISubscriber) {
-    t8 = true && !isClaudeAISubscriber && <Text color="error">Claude in Chrome requires a claude.ai subscription.</Text>;
+    t8 = true && !isClaudeAISubscriber && <Text color="error">{uiText('Claude in Chrome requires a claude.ai subscription.', 'Claude in Chrome 需要 claude.ai 订阅。')}</Text>;
     $[23] = isClaudeAISubscriber;
     $[24] = t8;
   } else {
@@ -220,7 +221,7 @@ function ClaudeInChromeMenu(t0) {
   }
   let t9;
   if ($[25] !== handleAction || $[26] !== isConnected || $[27] !== isDisabled || $[28] !== isExtensionInstalled || $[29] !== options || $[30] !== selectKey || $[31] !== showInstallHint) {
-    t9 = !isDisabled && <>{!isHomespace && <Box flexDirection="column"><Text>Status:{" "}{isConnected ? <Text color="success">Enabled</Text> : <Text color="inactive">Disabled</Text>}</Text><Text>Extension:{" "}{isExtensionInstalled ? <Text color="success">Installed</Text> : <Text color="warning">Not detected</Text>}</Text></Box>}<Select key={selectKey} options={options} onChange={handleAction} hideIndexes={true} />{showInstallHint && <Text color="warning">Once installed, select {"\"Reconnect extension\""} to connect.</Text>}<Text><Text dimColor={true}>Usage: </Text><Text>claude --chrome</Text><Text dimColor={true}> or </Text><Text>claude --no-chrome</Text></Text><Text dimColor={true}>Site-level permissions are inherited from the Chrome extension. Manage permissions in the Chrome extension settings to control which sites Claude can browse, click, and type on.</Text></>;
+    t9 = !isDisabled && <>{!isHomespace && <Box flexDirection="column"><Text>{uiText('Status:', '状态：')}{" "}{isConnected ? <Text color="success">{uiText('Enabled', '已启用')}</Text> : <Text color="inactive">{uiText('Disabled', '已禁用')}</Text>}</Text><Text>{uiText('Extension:', '扩展：')}{" "}{isExtensionInstalled ? <Text color="success">{uiText('Installed', '已安装')}</Text> : <Text color="warning">{uiText('Not detected', '未检测到')}</Text>}</Text></Box>}<Select key={selectKey} options={options} onChange={handleAction} hideIndexes={true} />{showInstallHint && <Text color="warning">{uiText('Once installed, select "Reconnect extension" to connect.', '安装完成后，请选择“重新连接扩展”以建立连接。')}</Text>}<Text><Text dimColor={true}>{uiText('Usage: ', '用法：')}</Text><Text>claude --chrome</Text><Text dimColor={true}>{uiText(' or ', ' 或 ')}</Text><Text>claude --no-chrome</Text></Text><Text dimColor={true}>{uiText('Site-level permissions are inherited from the Chrome extension. Manage permissions in the Chrome extension settings to control which sites Claude can browse, click, and type on.', '站点级权限继承自 Chrome 扩展。请在扩展设置中管理权限，以控制 Claude 可访问、点击和输入的网站范围。')}</Text></>;
     $[25] = handleAction;
     $[26] = isConnected;
     $[27] = isDisabled;
@@ -234,7 +235,7 @@ function ClaudeInChromeMenu(t0) {
   }
   let t10;
   if ($[33] === Symbol.for("react.memo_cache_sentinel")) {
-    t10 = <Text dimColor={true}>Learn more: https://code.claude.com/docs/en/chrome</Text>;
+    t10 = <Text dimColor={true}>{uiText('Learn more: https://code.claude.com/docs/en/chrome', '了解更多：https://code.claude.com/docs/en/chrome')}</Text>;
     $[33] = t10;
   } else {
     t10 = $[33];
@@ -251,7 +252,7 @@ function ClaudeInChromeMenu(t0) {
   }
   let t12;
   if ($[38] !== t11 || $[39] !== t5) {
-    t12 = <Dialog title="Claude in Chrome (Beta)" onCancel={t5} color="chromeYellow">{t11}</Dialog>;
+    t12 = <Dialog title={uiText('Claude in Chrome (Beta)', 'Claude in Chrome（Beta）')} onCancel={t5} color="chromeYellow">{t11}</Dialog>;
     $[38] = t11;
     $[39] = t5;
     $[40] = t12;

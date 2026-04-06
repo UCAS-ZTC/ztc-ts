@@ -7,13 +7,14 @@ import { getPlatform } from '../../utils/platform.js';
 import { addToExcludedCommands, SandboxManager } from '../../utils/sandbox/sandbox-adapter.js';
 import { getSettings_DEPRECATED, getSettingsFilePathForSource } from '../../utils/settings/settings.js';
 import type { ThemeName } from '../../utils/theme.js';
+import { uiText } from '../../utils/uiLocale.js';
 export async function call(onDone: (result?: string) => void, _context: unknown, args?: string): Promise<React.ReactNode | null> {
   const settings = getSettings_DEPRECATED();
   const themeName: ThemeName = settings.theme as ThemeName || 'light';
   const platform = getPlatform();
   if (!SandboxManager.isSupportedPlatform()) {
     // WSL1 users will see this since isSupportedPlatform returns false for WSL1
-    const errorMessage = platform === 'wsl' ? 'Error: Sandboxing requires WSL2. WSL1 is not supported.' : 'Error: Sandboxing is currently only supported on macOS, Linux, and WSL2.';
+    const errorMessage = platform === 'wsl' ? uiText('Error: Sandboxing requires WSL2. WSL1 is not supported.', '错误：沙箱功能需要 WSL2，WSL1 不受支持。') : uiText('Error: Sandboxing is currently only supported on macOS, Linux, and WSL2.', '错误：沙箱目前仅支持 macOS、Linux 和 WSL2。');
     const message = color('error', themeName)(errorMessage);
     onDone(message);
     return null;
@@ -24,14 +25,14 @@ export async function call(onDone: (result?: string) => void, _context: unknown,
 
   // Check if platform is in enabledPlatforms list (undocumented enterprise setting)
   if (!SandboxManager.isPlatformInEnabledList()) {
-    const message = color('error', themeName)(`Error: Sandboxing is disabled for this platform (${platform}) via the enabledPlatforms setting.`);
+    const message = color('error', themeName)(uiText(`Error: Sandboxing is disabled for this platform (${platform}) via the enabledPlatforms setting.`, `错误：enabledPlatforms 设置已禁用当前平台（${platform}）的沙箱功能。`));
     onDone(message);
     return null;
   }
 
   // Check if sandbox settings are locked by higher-priority settings
   if (SandboxManager.areSandboxSettingsLockedByPolicy()) {
-    const message = color('error', themeName)('Error: Sandbox settings are overridden by a higher-priority configuration and cannot be changed locally.');
+    const message = color('error', themeName)(uiText('Error: Sandbox settings are overridden by a higher-priority configuration and cannot be changed locally.', '错误：沙箱设置已被更高优先级配置覆盖，无法在本地修改。'));
     onDone(message);
     return null;
   }
@@ -52,7 +53,7 @@ export async function call(onDone: (result?: string) => void, _context: unknown,
       // Handle exclude subcommand
       const commandPattern = trimmedArgs.slice('exclude '.length).trim();
       if (!commandPattern) {
-        const message = color('error', themeName)('Error: Please provide a command pattern to exclude (e.g., /sandbox exclude "npm run test:*")');
+        const message = color('error', themeName)(uiText('Error: Please provide a command pattern to exclude (e.g., /sandbox exclude "npm run test:*")', '错误：请提供要排除的命令模式（例如：/sandbox exclude "npm run test:*"）。'));
         onDone(message);
         return null;
       }
@@ -66,12 +67,12 @@ export async function call(onDone: (result?: string) => void, _context: unknown,
       // Get the local settings path and make it relative to cwd
       const localSettingsPath = getSettingsFilePathForSource('localSettings');
       const relativePath = localSettingsPath ? relative(getCwdState(), localSettingsPath) : '.claude/settings.local.json';
-      const message = color('success', themeName)(`Added "${cleanPattern}" to excluded commands in ${relativePath}`);
+      const message = color('success', themeName)(uiText(`Added "${cleanPattern}" to excluded commands in ${relativePath}`, `已将 "${cleanPattern}" 添加到 ${relativePath} 的排除命令列表`));
       onDone(message);
       return null;
     } else {
       // Unknown subcommand
-      const message = color('error', themeName)(`Error: Unknown subcommand "${subcommand}". Available subcommand: exclude`);
+      const message = color('error', themeName)(uiText(`Error: Unknown subcommand "${subcommand}". Available subcommand: exclude`, `错误：未知子命令 "${subcommand}"。可用子命令：exclude`));
       onDone(message);
       return null;
     }

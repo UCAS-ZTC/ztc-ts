@@ -16,6 +16,7 @@ import {
 import { getAutoModeConfig } from '../../utils/settings/settings.js'
 import { sideQuery } from '../../utils/sideQuery.js'
 import { jsonStringify } from '../../utils/slowOperations.js'
+import { uiText } from '../../utils/uiLocale.js'
 
 function writeRules(rules: AutoModeRules): void {
   process.stdout.write(jsonStringify(rules, null, 2) + '\n')
@@ -81,9 +82,14 @@ export async function autoModeCritiqueHandler(options: {
 
   if (!hasCustomRules) {
     process.stdout.write(
-      'No custom auto mode rules found.\n\n' +
-        'Add rules to your settings file under autoMode.{allow, soft_deny, environment}.\n' +
-        'Run `claude auto-mode defaults` to see the default rules for reference.\n',
+      uiText(
+        'No custom auto mode rules found.\n\n' +
+          'Add rules to your settings file under autoMode.{allow, soft_deny, environment}.\n' +
+          'Run `claude auto-mode defaults` to see the default rules for reference.\n',
+        '未找到自定义 auto mode 规则。\n\n' +
+          '请在设置文件中配置 autoMode.{allow, soft_deny, environment}。\n' +
+          '可运行 `claude auto-mode defaults` 查看默认规则作为参考。\n',
+      ),
     )
     return
   }
@@ -108,7 +114,9 @@ export async function autoModeCritiqueHandler(options: {
       defaults.environment,
     )
 
-  process.stdout.write('Analyzing your auto mode rules…\n\n')
+  process.stdout.write(
+    uiText('Analyzing your auto mode rules…\n\n', '正在分析你的 auto mode 规则…\n\n'),
+  )
 
   let response
   try {
@@ -134,7 +142,9 @@ export async function autoModeCritiqueHandler(options: {
     })
   } catch (error) {
     process.stderr.write(
-      'Failed to analyze rules: ' + errorMessage(error) + '\n',
+      uiText('Failed to analyze rules: ', '分析规则失败：') +
+        errorMessage(error) +
+        '\n',
     )
     process.exitCode = 1
     return
@@ -144,7 +154,12 @@ export async function autoModeCritiqueHandler(options: {
   if (textBlock?.type === 'text') {
     process.stdout.write(textBlock.text + '\n')
   } else {
-    process.stdout.write('No critique was generated. Please try again.\n')
+    process.stdout.write(
+      uiText(
+        'No critique was generated. Please try again.\n',
+        '未生成评估结果，请重试。\n',
+      ),
+    )
   }
 }
 

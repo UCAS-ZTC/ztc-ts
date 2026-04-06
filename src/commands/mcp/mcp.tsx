@@ -5,6 +5,7 @@ import { MCPReconnect } from '../../components/mcp/MCPReconnect.js';
 import { useMcpToggleEnabled } from '../../services/mcp/MCPConnectionManager.js';
 import { useAppState } from '../../state/AppState.js';
 import type { LocalJSXCommandOnDone } from '../../types/command.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { PluginSettings } from '../plugin/PluginSettings.js';
 
 // TODO: This is a hack to get the context value from toggleMcpServer (useContext only works in a component)
@@ -31,13 +32,13 @@ function MCPToggle(t0) {
       const clients = mcpClients.filter(_temp2);
       const toToggle = target === "all" ? clients.filter(c_0 => isEnabling ? c_0.type === "disabled" : c_0.type !== "disabled") : clients.filter(c_1 => c_1.name === target);
       if (toToggle.length === 0) {
-        onComplete(target === "all" ? `All MCP servers are already ${isEnabling ? "enabled" : "disabled"}` : `MCP server "${target}" not found`);
+        onComplete(target === "all" ? uiText(`All MCP servers are already ${isEnabling ? "enabled" : "disabled"}`, `所有 MCP 服务器均已${isEnabling ? '启用' : '禁用'}`) : uiText(`MCP server "${target}" not found`, `未找到 MCP 服务器 "${target}"`));
         return;
       }
       for (const s_0 of toToggle) {
         toggleMcpServer(s_0.name);
       }
-      onComplete(target === "all" ? `${isEnabling ? "Enabled" : "Disabled"} ${toToggle.length} MCP server(s)` : `MCP server "${target}" ${isEnabling ? "enabled" : "disabled"}`);
+      onComplete(target === "all" ? uiText(`${isEnabling ? "Enabled" : "Disabled"} ${toToggle.length} MCP server(s)`, `${isEnabling ? '已启用' : '已禁用'} ${toToggle.length} 个 MCP 服务器`) : uiText(`MCP server "${target}" ${isEnabling ? "enabled" : "disabled"}`, `MCP 服务器 "${target}" 已${isEnabling ? '启用' : '禁用'}`));
     };
     t2 = [action, target, mcpClients, toggleMcpServer, onComplete];
     $[0] = action;

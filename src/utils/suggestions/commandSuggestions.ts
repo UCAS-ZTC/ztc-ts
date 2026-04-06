@@ -7,6 +7,7 @@ import {
 } from '../../commands.js'
 import type { SuggestionItem } from '../../components/PromptInput/PromptInputFooterSuggestions.js'
 import { getSkillUsageScore } from './skillUsageTracking.js'
+import { uiText } from '../uiLocale.js'
 
 // Treat these characters as word separators for command search
 const SEPARATORS = /[:_-]/g
@@ -274,7 +275,7 @@ function createCommandSuggestionItem(
   const fullDescription =
     (isWorkflow ? cmd.description : formatDescriptionWithSource(cmd)) +
     (cmd.type === 'prompt' && cmd.argNames?.length
-      ? ` (arguments: ${cmd.argNames.join(', ')})`
+      ? uiText(` (arguments: ${cmd.argNames.join(', ')})`, `（参数：${cmd.argNames.join(', ')}）`)
       : '')
 
   return {

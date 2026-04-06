@@ -9,12 +9,16 @@ export function isOpenAICompatMode(): boolean {
 function getOpenAIBaseUrl(): string {
   let base = process.env.ANTHROPIC_BASE_URL || ''
   base = base.replace(/\/+$/, '')
-  if (!base.endsWith('/v1')) base += '/v1'
+  // start.sh already strips trailing /v1; only re-append when the path
+  // doesn't already end with /v1 (avoids double /v1/v1).
+  if (!/\/v1$/i.test(base)) base += '/v1'
   return base
 }
 
 function getApiKey(): string {
-  return process.env.ANTHROPIC_API_KEY || ''
+  return process.env.ANTHROPIC_API_KEY
+    || process.env.ANTHROPIC_AUTH_TOKEN
+    || ''
 }
 
 // ─── Request translation ─────────────────────────────────────────────
@@ -26,6 +30,23 @@ function flattenContentToString(content: any): string {
     .filter((b: any) => b.type === 'text')
     .map((b: any) => b.text || '')
     .join('\n')
+}
+
+function imageBlockToOpenAI(block: any): any | null {
+  if (block.type === 'image' && block.source) {
+    if (block.source.type === 'base64') {
+      return {
+        type: 'image_url',
+        image_url: {
+          url: `data:${block.source.media_type || 'image/png'};base64,${block.source.data}`,
+        },
+      }
+    }
+    if (block.source.type === 'url' && block.source.url) {
+      return { type: 'image_url', image_url: { url: block.source.url } }
+    }
+  }
+  return null
 }
 
 function translateMessages(system: any, messages: any[]): any[] {
@@ -49,11 +70,23 @@ function translateMessages(system: any, messages: any[]): any[] {
         out.push({ role: 'user', content: String(msg.content ?? '') })
         continue
       }
-      const textParts: string[] = []
+      const contentParts: any[] = []
+      const flushText = () => {
+        if (!contentParts.length) return
+        const allText = contentParts.every((p: any) => p.type === 'text')
+        out.push({
+          role: 'user',
+          content: allText
+            ? contentParts.map((p: any) => p.text).join('\n')
+            : [...contentParts],
+        })
+        contentParts.length = 0
+      }
       for (const block of msg.content) {
         if (block.type === 'text') {
-          textParts.push(block.text)
+          contentParts.push({ type: 'text', text: block.text })
         } else if (block.type === 'tool_result') {
+          flushText()
           const rc =
             typeof block.content === 'string'
               ? block.content
@@ -62,10 +95,11 @@ function translateMessages(system: any, messages: any[]): any[] {
                 : JSON.stringify(block.content ?? '')
           out.push({ role: 'tool', tool_call_id: block.tool_use_id, content: rc })
         } else if (block.type === 'image') {
-          textParts.push('[image]')
+          const img = imageBlockToOpenAI(block)
+          if (img) contentParts.push(img)
         }
       }
-      if (textParts.length) out.push({ role: 'user', content: textParts.join('\n') })
+      flushText()
     } else if (msg.role === 'assistant') {
       if (typeof msg.content === 'string') {
         out.push({ role: 'assistant', content: msg.content })
@@ -81,7 +115,9 @@ function translateMessages(system: any, messages: any[]): any[] {
         if (block.type === 'text') {
           textParts.push(block.text)
         } else if (block.type === 'thinking' && block.thinking) {
-          textParts.push(block.thinking)
+          // Thinking blocks are kept separate from output text via a marker
+          // so downstream consumers can distinguish reasoning from output.
+          textParts.push(`<thinking>\n${block.thinking}\n</thinking>`)
         } else if (block.type === 'tool_use') {
           toolCalls.push({
             id: block.id,
@@ -140,7 +176,7 @@ function buildOpenAIBody(body: any): any {
     if (tc) result.tool_choice = tc
   }
 
-  if (body.stream) {
+  if (body.stream && process.env.OPENAI_COMPAT_DISABLE_STREAM_OPTIONS !== '1') {
     result.stream_options = { include_usage: true }
   }
   return result

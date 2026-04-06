@@ -1,4 +1,19 @@
 import { execFileNoThrow } from './execFileNoThrow.js'
+import { existsSync, readFileSync } from 'fs'
+
+let _isWSL: boolean | undefined
+function isWSL(): boolean {
+  if (_isWSL === undefined) {
+    try {
+      _isWSL =
+        existsSync('/proc/version') &&
+        /microsoft|wsl/i.test(readFileSync('/proc/version', 'utf8'))
+    } catch {
+      _isWSL = false
+    }
+  }
+  return _isWSL
+}
 
 function validateUrl(url: string): void {
   let parsedUrl: URL
@@ -28,6 +43,10 @@ export async function openPath(path: string): Promise<boolean> {
       const { code } = await execFileNoThrow('explorer', [path])
       return code === 0
     }
+    if (isWSL()) {
+      const { code } = await execFileNoThrow('explorer.exe', [path])
+      return code === 0
+    }
     const command = platform === 'darwin' ? 'open' : 'xdg-open'
     const { code } = await execFileNoThrow(command, [path])
     return code === 0
@@ -46,7 +65,6 @@ export async function openBrowser(url: string): Promise<boolean> {
 
     if (platform === 'win32') {
       if (browserEnv) {
-        // browsers require shell, else they will treat this as a file:/// handle
         const { code } = await execFileNoThrow(browserEnv, [`"${url}"`])
         return code === 0
       }
@@ -55,6 +73,13 @@ export async function openBrowser(url: string): Promise<boolean> {
         ['url,OpenURL', url],
         {},
       )
+      return code === 0
+    } else if (isWSL()) {
+      if (browserEnv) {
+        const { code } = await execFileNoThrow(browserEnv, [url])
+        return code === 0
+      }
+      const { code } = await execFileNoThrow('cmd.exe', ['/c', 'start', '', url.replace(/&/g, '^&')])
       return code === 0
     } else {
       const command =

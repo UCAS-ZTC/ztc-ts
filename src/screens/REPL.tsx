@@ -129,6 +129,7 @@ import { SLEEP_TOOL_NAME } from '../tools/SleepTool/prompt.js';
 import { clearSpeculativeChecks } from '../tools/BashTool/bashPermissions.js';
 import type { AutoUpdaterResult } from '../utils/autoUpdater.js';
 import { getGlobalConfig, saveGlobalConfig, getGlobalConfigWriteCount } from '../utils/config.js';
+import { uiText } from '../utils/uiLocale.js';
 import { hasConsoleBillingAccess } from '../utils/billing.js';
 import { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 'src/services/analytics/index.js';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from 'src/services/analytics/growthbook.js';
@@ -2318,7 +2319,7 @@ export function REPL({
     const reason = SandboxManager.getSandboxUnavailableReason();
     if (!reason) return;
     if (SandboxManager.isSandboxRequired()) {
-      process.stderr.write(`\nError: sandbox required but unavailable: ${reason}\n` + `  sandbox.failIfUnavailable is set — refusing to start without a working sandbox.\n\n`);
+      process.stderr.write(`\n${uiText('Error', '错误')}: ${uiText('sandbox required but unavailable', '沙箱被要求启用但当前不可用')}: ${reason}\n` + `  ${uiText('sandbox.failIfUnavailable is set — refusing to start without a working sandbox.', '已设置 sandbox.failIfUnavailable，缺少可用沙箱时将拒绝启动。')}\n\n`);
       gracefulShutdownSync(1, 'other');
       return;
     }
@@ -2338,7 +2339,7 @@ export function REPL({
     // If sandboxing is enabled (setting.sandbox is defined, initialise the manager)
     SandboxManager.initialize(sandboxAskCallback).catch(err => {
       // Initialization/validation failed - display error and exit
-      process.stderr.write(`\n❌ Sandbox Error: ${errorMessage(err)}\n`);
+      process.stderr.write(`\n❌ ${uiText('Sandbox Error', '沙箱错误')}: ${errorMessage(err)}\n`);
       gracefulShutdownSync(1, 'other');
     });
   }
@@ -4123,7 +4124,7 @@ export function REPL({
   useEffect(() => {
     const handleSuspend = () => {
       // Print suspension instructions
-      process.stdout.write(`\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`);
+      process.stdout.write(`\n${uiText('Claude Code has been suspended. Run `fg` to bring Claude Code back.', 'Claude Code 已挂起。运行 `fg` 可恢复。')}\n${uiText('Note: ctrl + z now suspends Claude Code, ctrl + _ undoes input.', '注意：ctrl + z 现在用于挂起 Claude Code，ctrl + _ 用于撤销输入。')}\n`);
     };
     const handleResume = () => {
       // Force complete component tree replacement instead of terminal clear

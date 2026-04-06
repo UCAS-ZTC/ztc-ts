@@ -5,6 +5,7 @@ import type { CommandResultDisplay } from '../../commands.js';
 import { Box, color, Text, useTheme } from '../../ink.js';
 import { useMcpReconnect } from '../../services/mcp/MCPConnectionManager.js';
 import { useAppStateStore } from '../../state/AppState.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { Spinner } from '../Spinner.js';
 type Props = {
   serverName: string;
@@ -32,9 +33,9 @@ export function MCPReconnect(t0) {
         try {
           const server = store.getState().mcp.clients.find(c => c.name === serverName);
           if (!server) {
-            setError(`MCP server "${serverName}" not found`);
+            setError(uiText(`MCP server "${serverName}" not found`, `未找到 MCP 服务器 "${serverName}"`));
             setIsReconnecting(false);
-            onComplete(`MCP server "${serverName}" not found`);
+            onComplete(uiText(`MCP server "${serverName}" not found`, `未找到 MCP 服务器 "${serverName}"`));
             return;
           }
           const result = await reconnectMcpServer(serverName);
@@ -42,23 +43,23 @@ export function MCPReconnect(t0) {
             case "connected":
               {
                 setIsReconnecting(false);
-                onComplete(`Successfully reconnected to ${serverName}`);
+                onComplete(uiText(`Successfully reconnected to ${serverName}`, `已成功重连到 ${serverName}`));
                 break bb43;
               }
             case "needs-auth":
               {
-                setError(`${serverName} requires authentication`);
+                setError(uiText(`${serverName} requires authentication`, `${serverName} 需要认证`));
                 setIsReconnecting(false);
-                onComplete(`${serverName} requires authentication. Use /mcp to authenticate.`);
+                onComplete(uiText(`${serverName} requires authentication. Use /mcp to authenticate.`, `${serverName} 需要认证。请使用 /mcp 完成认证。`));
                 break bb43;
               }
             case "pending":
             case "failed":
             case "disabled":
               {
-                setError(`Failed to reconnect to ${serverName}`);
+                setError(uiText(`Failed to reconnect to ${serverName}`, `重连到 ${serverName} 失败`));
                 setIsReconnecting(false);
-                onComplete(`Failed to reconnect to ${serverName}`);
+                onComplete(uiText(`Failed to reconnect to ${serverName}`, `重连到 ${serverName} 失败`));
               }
           }
         } catch (t3) {
@@ -66,7 +67,7 @@ export function MCPReconnect(t0) {
           const errorMessage = err instanceof Error ? err.message : String(err);
           setError(errorMessage);
           setIsReconnecting(false);
-          onComplete(`Error: ${errorMessage}`);
+          onComplete(uiText(`Error: ${errorMessage}`, `错误：${errorMessage}`));
         }
       };
       attemptReconnect();
@@ -86,7 +87,7 @@ export function MCPReconnect(t0) {
   if (isReconnecting) {
     let t3;
     if ($[6] !== serverName) {
-      t3 = <Text color="text">Reconnecting to <Text bold={true}>{serverName}</Text></Text>;
+      t3 = <Text color="text">{uiText('Reconnecting to ', '正在重连 ')}<Text bold={true}>{serverName}</Text></Text>;
       $[6] = serverName;
       $[7] = t3;
     } else {
@@ -94,7 +95,7 @@ export function MCPReconnect(t0) {
     }
     let t4;
     if ($[8] === Symbol.for("react.memo_cache_sentinel")) {
-      t4 = <Box><Spinner /><Text> Establishing connection to MCP server</Text></Box>;
+      t4 = <Box><Spinner /><Text> {uiText('Establishing connection to MCP server', '正在建立 MCP 服务器连接')}</Text></Box>;
       $[8] = t4;
     } else {
       t4 = $[8];
@@ -128,7 +129,7 @@ export function MCPReconnect(t0) {
     }
     let t5;
     if ($[15] !== serverName) {
-      t5 = <Text color="error">Failed to reconnect to {serverName}</Text>;
+      t5 = <Text color="error">{uiText('Failed to reconnect to ', '重连失败：')}{serverName}</Text>;
       $[15] = serverName;
       $[16] = t5;
     } else {
@@ -145,7 +146,7 @@ export function MCPReconnect(t0) {
     }
     let t7;
     if ($[20] !== error) {
-      t7 = <Text dimColor={true}>Error: {error}</Text>;
+      t7 = <Text dimColor={true}>{uiText('Error: ', '错误：')}{error}</Text>;
       $[20] = error;
       $[21] = t7;
     } else {

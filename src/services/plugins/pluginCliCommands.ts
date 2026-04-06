@@ -14,6 +14,7 @@ import { getManagedPluginNames } from '../../utils/plugins/managedPlugins.js'
 import { parsePluginIdentifier } from '../../utils/plugins/pluginIdentifier.js'
 import type { PluginScope } from '../../utils/plugins/schemas.js'
 import { writeToStdout } from '../../utils/process.js'
+import { uiText } from '../../utils/uiLocale.js'
 import {
   buildPluginTelemetryFields,
   classifyPluginCommandError,
@@ -63,7 +64,10 @@ function handlePluginCommandError(
       : `${command} plugins`
   // biome-ignore lint/suspicious/noConsole:: intentional console output
   console.error(
-    `${figures.cross} Failed to ${operation}: ${errorMessage(error)}`,
+    uiText(
+      `${figures.cross} Failed to ${operation}: ${errorMessage(error)}`,
+      `${figures.cross} ${command === 'disable-all' ? '禁用全部插件' : plugin ? `操作插件 "${plugin}"` : '执行插件操作'}失败：${errorMessage(error)}`,
+    ),
   )
   const telemetryFields = plugin
     ? (() => {
@@ -106,7 +110,7 @@ export async function installPlugin(
 ): Promise<void> {
   try {
     // biome-ignore lint/suspicious/noConsole:: intentional console output
-    console.log(`Installing plugin "${plugin}"...`)
+    console.log(uiText(`Installing plugin "${plugin}"...`, `正在安装插件 "${plugin}"...`))
 
     const result = await installPluginOp(plugin, scope)
 
@@ -303,7 +307,10 @@ export async function updatePluginCli(
 ): Promise<void> {
   try {
     writeToStdout(
-      `Checking for updates for plugin "${plugin}" at ${scope} scope…\n`,
+      uiText(
+        `Checking for updates for plugin "${plugin}" at ${scope} scope…\n`,
+        `正在检查插件 "${plugin}" 在 ${scope} 作用域的更新…\n`,
+      ),
     )
 
     const result = await updatePluginOp(plugin, scope)

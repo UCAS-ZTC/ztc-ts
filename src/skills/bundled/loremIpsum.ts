@@ -239,7 +239,7 @@ export function registerLoremIpsumSkill(): void {
   registerBundledSkill({
     name: 'lorem-ipsum',
     description:
-      'Generate filler text for long context testing. Specify token count as argument (e.g., /lorem-ipsum 50000). Outputs approximately the requested number of tokens. Ant-only.',
+      '生成用于长上下文测试的填充文本。指定 token 数量作为参数（如 /lorem-ipsum 50000）。输出大约请求数量的 token。',
     argumentHint: '[token_count]',
     userInvocable: true,
     async getPromptForCommand(args) {
@@ -249,7 +249,7 @@ export function registerLoremIpsumSkill(): void {
         return [
           {
             type: 'text',
-            text: 'Invalid token count. Please provide a positive number (e.g., /lorem-ipsum 10000).',
+            text: '无效的 token 数量。请提供正整数（如 /lorem-ipsum 10000）。',
           },
         ]
       }
@@ -263,7 +263,7 @@ export function registerLoremIpsumSkill(): void {
         return [
           {
             type: 'text',
-            text: `Requested ${targetTokens} tokens, but capped at 500,000 for safety.\n\n${generateLoremIpsum(cappedTokens)}`,
+            text: `请求了 ${targetTokens} 个 token，但出于安全限制为 500,000。\n\n${generateLoremIpsum(cappedTokens)}`,
           },
         ]
       }

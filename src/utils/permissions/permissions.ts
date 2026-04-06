@@ -138,19 +138,18 @@ export function createPermissionRequestMessage(
   toolName: string,
   decisionReason?: PermissionDecisionReason,
 ): string {
-  // Handle different decision reason types
   if (decisionReason) {
     if (
       (feature('BASH_CLASSIFIER') || feature('TRANSCRIPT_CLASSIFIER')) &&
       decisionReason.type === 'classifier'
     ) {
-      return `Classifier '${decisionReason.classifier}' requires approval for this ${toolName} command: ${decisionReason.reason}`
+      return `分类器 '${decisionReason.classifier}' 需要审批此 ${toolName} 命令: ${decisionReason.reason}`
     }
     switch (decisionReason.type) {
       case 'hook': {
         const hookMessage = decisionReason.reason
-          ? `Hook '${decisionReason.hookName}' blocked this action: ${decisionReason.reason}`
-          : `Hook '${decisionReason.hookName}' requires approval for this ${toolName} command`
+          ? `Hook '${decisionReason.hookName}' 已拦截此操作: ${decisionReason.reason}`
+          : `Hook '${decisionReason.hookName}' 需要审批此 ${toolName} 命令`
         return hookMessage
       }
       case 'rule': {
@@ -160,18 +159,15 @@ export function createPermissionRequestMessage(
         const sourceString = permissionRuleSourceDisplayString(
           decisionReason.rule.source,
         )
-        return `Permission rule '${ruleString}' from ${sourceString} requires approval for this ${toolName} command`
+        return `权限规则 '${ruleString}'（来源: ${sourceString}）需要审批此 ${toolName} 命令`
       }
       case 'subcommandResults': {
         const needsApproval: string[] = []
         for (const [cmd, result] of decisionReason.reasons) {
           if (result.behavior === 'ask' || result.behavior === 'passthrough') {
-            // Strip output redirections for display to avoid showing filenames as commands
-            // Only do this for Bash tool to avoid affecting other tools
             if (toolName === 'Bash') {
               const { commandWithoutRedirections, redirections } =
                 extractOutputRedirections(cmd)
-              // Only use stripped version if there were actual redirections
               const displayCmd =
                 redirections.length > 0 ? commandWithoutRedirections : cmd
               needsApproval.push(displayCmd)
@@ -181,15 +177,14 @@ export function createPermissionRequestMessage(
           }
         }
         if (needsApproval.length > 0) {
-          const n = needsApproval.length
-          return `This ${toolName} command contains multiple operations. The following ${plural(n, 'part')} ${plural(n, 'requires', 'require')} approval: ${needsApproval.join(', ')}`
+          return `此 ${toolName} 命令包含多个操作，以下 ${needsApproval.length} 项需要审批: ${needsApproval.join(', ')}`
         }
-        return `This ${toolName} command contains multiple operations that require approval`
+        return `此 ${toolName} 命令包含多个需要审批的操作`
       }
       case 'permissionPromptTool':
-        return `Tool '${decisionReason.permissionPromptToolName}' requires approval for this ${toolName} command`
+        return `工具 '${decisionReason.permissionPromptToolName}' 需要审批此 ${toolName} 命令`
       case 'sandboxOverride':
-        return 'Run outside of the sandbox'
+        return '在沙箱外运行'
       case 'workingDir':
         return decisionReason.reason
       case 'safetyCheck':
@@ -197,15 +192,14 @@ export function createPermissionRequestMessage(
         return decisionReason.reason
       case 'mode': {
         const modeTitle = permissionModeTitle(decisionReason.mode)
-        return `Current permission mode (${modeTitle}) requires approval for this ${toolName} command`
+        return `当前权限模式（${modeTitle}）需要审批此 ${toolName} 命令`
       }
       case 'asyncAgent':
         return decisionReason.reason
     }
   }
 
-  // Default message without listing allowed commands
-  const message = `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`
+  const message = `Claude 请求使用 ${toolName}，但尚未获得授权。`
 
   return message
 }
@@ -697,6 +691,28 @@ export const hasPermissionsToUseTool: CanUseToolFn = async (
           appState.toolPermissionContext,
           context.abortController.signal,
         )
+      } catch (classifierError) {
+        clearClassifierChecking(toolUseID)
+        // When using a third-party proxy the classifier API may be
+        // incompatible. Fail-open: allow the action instead of blocking
+        // the user with an opaque error.
+        const isThirdParty = !!(process.env.ANTHROPIC_BASE_URL &&
+          !process.env.ANTHROPIC_BASE_URL.includes('anthropic.com'))
+        if (isThirdParty) {
+          logForDebugging(
+            `Auto mode classifier failed on third-party proxy, auto-allowing: ${classifierError}`,
+            { level: 'warn' },
+          )
+          return {
+            behavior: 'allow',
+            updatedInput: input,
+            decisionReason: {
+              type: 'other',
+              reason: 'Classifier unavailable on third-party proxy — auto-allowed',
+            },
+          }
+        }
+        throw classifierError
       } finally {
         clearClassifierChecking(toolUseID)
       }
@@ -1084,7 +1100,7 @@ export async function checkRuleBasedPermissions(
         type: 'rule',
         rule: denyRule,
       },
-      message: `Permission to use ${tool.name} has been denied.`,
+      message: `${tool.name} 的使用权限已被拒绝。`,
     }
   }
 
@@ -1155,6 +1171,56 @@ export async function checkRuleBasedPermissions(
   return null
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// Local safety policy for claude-code-local:
+//   • DELETE operations → always DENY  (rm, rmdir, shred, unlink, find -delete)
+//   • MOVE   operations → ASK          (mv)
+//   • Everything else   → auto ALLOW
+// ═══════════════════════════════════════════════════════════════════════
+
+const DELETE_CMD_PATTERN =
+  /(?:^|&&|\|\||;|\|)\s*(?:sudo\s+)?(?:rm|rmdir|shred|unlink)\b/
+const FIND_DELETE_PATTERN = /\bfind\b.*(?:-delete\b|-exec\s+rm\b)/
+const MOVE_CMD_PATTERN =
+  /(?:^|&&|\|\||;|\|)\s*(?:sudo\s+)?mv\b/
+
+function applyLocalSafetyPolicy(
+  tool: Tool,
+  input: { [key: string]: unknown },
+  toolPermissionResult: PermissionResult,
+): PermissionDecision | null {
+  if (tool.name === BASH_TOOL_NAME) {
+    const command = String(input.command ?? '')
+    if (DELETE_CMD_PATTERN.test(command) || FIND_DELETE_PATTERN.test(command)) {
+      return {
+        behavior: 'deny',
+        decisionReason: { type: 'other', reason: '本地安全策略: 禁止执行删除操作，删除文件只能由人工执行。' },
+        message: '⛔ 删除操作已被本地安全策略禁止。请手动执行删除命令。',
+      }
+    }
+    if (MOVE_CMD_PATTERN.test(command)) {
+      return {
+        behavior: 'ask',
+        decisionReason: { type: 'other', reason: '本地安全策略: 移动文件需要人工审批。' },
+        message: `此 Bash 命令包含移动操作（mv），需要您的审批: ${command}`,
+      }
+    }
+    // Non-delete, non-move bash commands → auto allow
+    return {
+      behavior: 'allow',
+      updatedInput: input,
+      decisionReason: { type: 'other', reason: '本地安全策略: 非删除/移动操作自动放行' },
+    }
+  }
+
+  // Non-Bash tools: auto allow (file read, write, edit, grep, glob, etc.)
+  return {
+    behavior: 'allow',
+    updatedInput: getUpdatedInputOrFallback(toolPermissionResult, input),
+    decisionReason: { type: 'other', reason: '本地安全策略: 非 Bash 工具自动放行' },
+  }
+}
+
 async function hasPermissionsToUseToolInner(
   tool: Tool,
   input: { [key: string]: unknown },
@@ -1176,16 +1242,13 @@ async function hasPermissionsToUseToolInner(
         type: 'rule',
         rule: denyRule,
       },
-      message: `Permission to use ${tool.name} has been denied.`,
+      message: `${tool.name} 的使用权限已被拒绝。`,
     }
   }
 
   // 1b. Check if the entire tool should always ask for permission
   const askRule = getAskRuleForTool(appState.toolPermissionContext, tool)
   if (askRule) {
-    // When autoAllowBashIfSandboxed is on, sandboxed commands skip the ask rule and
-    // auto-allow via Bash's checkPermissions. Commands that won't be sandboxed (excluded
-    // commands, dangerouslyDisableSandbox) still need to respect the ask rule.
     const canSandboxAutoAllow =
       tool.name === BASH_TOOL_NAME &&
       SandboxManager.isSandboxingEnabled() &&
@@ -1202,11 +1265,9 @@ async function hasPermissionsToUseToolInner(
         message: createPermissionRequestMessage(tool.name),
       }
     }
-    // Fall through to let Bash's checkPermissions handle command-specific rules
   }
 
   // 1c. Ask the tool implementation for a permission result
-  // Overridden unless tool input schema is not valid
   let toolPermissionResult: PermissionResult = {
     behavior: 'passthrough',
     message: createPermissionRequestMessage(tool.name),
@@ -1259,12 +1320,22 @@ async function hasPermissionsToUseToolInner(
     return toolPermissionResult
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // LOCAL SAFETY POLICY: auto-allow everything except delete / move.
+  //   - Delete commands (rm, rmdir, shred, unlink, find -delete)
+  //     are ALWAYS DENIED — only humans may delete files.
+  //   - Move commands (mv) require explicit user approval.
+  //   - All other operations are auto-allowed.
+  // This block runs before the upstream bypass / always-allow / ask
+  // pipeline so it takes precedence.
+  // ═══════════════════════════════════════════════════════════════════
+  const localPolicyResult = applyLocalSafetyPolicy(tool, input, toolPermissionResult)
+  if (localPolicyResult) {
+    return localPolicyResult
+  }
+
   // 2a. Check if mode allows the tool to run
-  // IMPORTANT: Call getAppState() to get the latest value
   appState = context.getAppState()
-  // Check if permissions should be bypassed:
-  // - Direct bypassPermissions mode
-  // - Plan mode when the user originally started with bypass mode (isBypassPermissionsModeAvailable)
   const shouldBypassPermissions =
     appState.toolPermissionContext.mode === 'bypassPermissions' ||
     (appState.toolPermissionContext.mode === 'plan' &&

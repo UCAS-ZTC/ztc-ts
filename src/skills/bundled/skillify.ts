@@ -163,7 +163,7 @@ export function registerSkillifySkill(): void {
   registerBundledSkill({
     name: 'skillify',
     description:
-      "Capture this session's repeatable process into a skill. Call at end of the process you want to capture with an optional description.",
+      '将本次会话的可重复流程捕获为技能。在流程结束时调用，可附加描述。',
     allowedTools: [
       'Read',
       'Write',
@@ -175,7 +175,7 @@ export function registerSkillifySkill(): void {
     ],
     userInvocable: true,
     disableModelInvocation: true,
-    argumentHint: '[description of the process you want to capture]',
+    argumentHint: '[要捕获的流程描述]',
     async getPromptForCommand(args, context) {
       const sessionMemory =
         (await getSessionMemoryContent()) ?? 'No session memory available.'

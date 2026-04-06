@@ -18,6 +18,7 @@ import { loadKnownMarketplacesConfig, removeMarketplaceSource } from '../../util
 import { getPluginEditableScopes } from '../../utils/plugins/pluginStartupCheck.js';
 import type { EditableSettingSource } from '../../utils/settings/constants.js';
 import { getSettingsForSource, updateSettingsForSource } from '../../utils/settings/settings.js';
+import { uiText } from '../../utils/uiLocale.js';
 import { AddMarketplace } from './AddMarketplace.js';
 import { BrowseMarketplace } from './BrowseMarketplace.js';
 import { DiscoverPlugins } from './DiscoverPlugins.js';
@@ -43,13 +44,13 @@ function MarketplaceList(t0) {
           const config = await loadKnownMarketplacesConfig();
           const names = Object.keys(config);
           if (names.length === 0) {
-            onComplete("No marketplaces configured");
+            onComplete(uiText('No marketplaces configured', '尚未配置插件市场'));
           } else {
-            onComplete(`Configured marketplaces:\n${names.map(_temp).join("\n")}`);
+            onComplete(uiText(`Configured marketplaces:\n${names.map(_temp).join("\n")}`, `已配置插件市场：\n${names.map(_temp).join("\n")}`));
           }
         } catch (t3) {
           const err = t3;
-          onComplete(`Error loading marketplaces: ${errorMessage(err)}`);
+          onComplete(uiText(`Error loading marketplaces: ${errorMessage(err)}`, `加载插件市场失败：${errorMessage(err)}`));
         }
       };
       loadList();
@@ -65,7 +66,7 @@ function MarketplaceList(t0) {
   useEffect(t1, t2);
   let t3;
   if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
-    t3 = <Text>Loading marketplaces...</Text>;
+    t3 = <Text>{uiText('Loading marketplaces...', '正在加载插件市场...')}</Text>;
     $[3] = t3;
   } else {
     t3 = $[3];
@@ -223,7 +224,7 @@ function buildErrorRows(failedMarketplaces: Array<{
     rows.push({
       label: pluginName ?? error.source,
       message: formatErrorMessage(error),
-      guidance: 'Restart to retry loading plugins',
+      guidance: uiText('Restart to retry loading plugins', '请重启后重试加载插件'),
       action: {
         kind: 'none'
       }
@@ -240,8 +241,8 @@ function buildErrorRows(failedMarketplaces: Array<{
     const scope = sourceInfo.isInPolicy ? 'managed' : sourceInfo.editableSources[0]?.scope;
     rows.push({
       label: m.name,
-      message: m.error ?? 'Installation failed',
-      guidance: action.kind === 'managed-only' ? 'Managed by your organization — contact your admin' : undefined,
+      message: m.error ?? uiText('Installation failed', '安装失败'),
+      guidance: action.kind === 'managed-only' ? uiText('Managed by your organization — contact your admin', '该项由组织托管，请联系管理员') : undefined,
       action,
       scope
     });
@@ -256,7 +257,7 @@ function buildErrorRows(failedMarketplaces: Array<{
     rows.push({
       label: marketplace,
       message: formatErrorMessage(e),
-      guidance: action.kind === 'managed-only' ? 'Managed by your organization — contact your admin' : getErrorGuidance(e),
+      guidance: action.kind === 'managed-only' ? uiText('Managed by your organization — contact your admin', '该项由组织托管，请联系管理员') : getErrorGuidance(e),
       action,
       scope
     });
@@ -916,7 +917,7 @@ export function PluginSettings(t0) {
   if (viewState.type === "help") {
     let t16;
     if ($[28] === Symbol.for("react.memo_cache_sentinel")) {
-      t16 = <Box flexDirection="column"><Text bold={true}>Plugin Command Usage:</Text><Text> </Text><Text dimColor={true}>Installation:</Text><Text> /plugin install - Browse and install plugins</Text><Text>{" "}{"/plugin install <marketplace> - Install from specific marketplace"}</Text><Text>{" /plugin install <plugin> - Install specific plugin"}</Text><Text>{" "}{"/plugin install <plugin>@<market> - Install plugin from marketplace"}</Text><Text> </Text><Text dimColor={true}>Management:</Text><Text> /plugin manage - Manage installed plugins</Text><Text>{" /plugin enable <plugin> - Enable a plugin"}</Text><Text>{" /plugin disable <plugin> - Disable a plugin"}</Text><Text>{" /plugin uninstall <plugin> - Uninstall a plugin"}</Text><Text> </Text><Text dimColor={true}>Marketplaces:</Text><Text> /plugin marketplace - Marketplace management menu</Text><Text> /plugin marketplace add - Add a marketplace</Text><Text>{" "}{"/plugin marketplace add <path/url> - Add marketplace directly"}</Text><Text> /plugin marketplace update - Update marketplaces</Text><Text>{" "}{"/plugin marketplace update <name> - Update specific marketplace"}</Text><Text> /plugin marketplace remove - Remove a marketplace</Text><Text>{" "}{"/plugin marketplace remove <name> - Remove specific marketplace"}</Text><Text> /plugin marketplace list - List all marketplaces</Text><Text> </Text><Text dimColor={true}>Validation:</Text><Text>{" "}{"/plugin validate <path> - Validate a manifest file or directory"}</Text><Text> </Text><Text dimColor={true}>Other:</Text><Text> /plugin - Main plugin menu</Text><Text> /plugin help - Show this help</Text><Text> /plugins - Alias for /plugin</Text></Box>;
+      t16 = <Box flexDirection="column"><Text bold={true}>{uiText('Plugin Command Usage:', '插件命令用法：')}</Text><Text> </Text><Text dimColor={true}>{uiText('Installation:', '安装：')}</Text><Text>{uiText('/plugin install - Browse and install plugins', '/plugin install - 浏览并安装插件')}</Text><Text>{" "}{uiText('/plugin install <marketplace> - Install from specific marketplace', '/plugin install <marketplace> - 从指定市场安装')}</Text><Text>{" "}{uiText('/plugin install <plugin> - Install specific plugin', '/plugin install <plugin> - 安装指定插件')}</Text><Text>{" "}{uiText('/plugin install <plugin>@<market> - Install plugin from marketplace', '/plugin install <plugin>@<market> - 从指定市场安装插件')}</Text><Text> </Text><Text dimColor={true}>{uiText('Management:', '管理：')}</Text><Text>{uiText('/plugin manage - Manage installed plugins', '/plugin manage - 管理已安装插件')}</Text><Text>{" "}{uiText('/plugin enable <plugin> - Enable a plugin', '/plugin enable <plugin> - 启用插件')}</Text><Text>{" "}{uiText('/plugin disable <plugin> - Disable a plugin', '/plugin disable <plugin> - 禁用插件')}</Text><Text>{" "}{uiText('/plugin uninstall <plugin> - Uninstall a plugin', '/plugin uninstall <plugin> - 卸载插件')}</Text><Text> </Text><Text dimColor={true}>{uiText('Marketplaces:', '插件市场：')}</Text><Text>{uiText('/plugin marketplace - Marketplace management menu', '/plugin marketplace - 插件市场管理菜单')}</Text><Text>{uiText('/plugin marketplace add - Add a marketplace', '/plugin marketplace add - 添加插件市场')}</Text><Text>{" "}{uiText('/plugin marketplace add <path/url> - Add marketplace directly', '/plugin marketplace add <path/url> - 直接添加插件市场')}</Text><Text>{uiText('/plugin marketplace update - Update marketplaces', '/plugin marketplace update - 更新插件市场')}</Text><Text>{" "}{uiText('/plugin marketplace update <name> - Update specific marketplace', '/plugin marketplace update <name> - 更新指定插件市场')}</Text><Text>{uiText('/plugin marketplace remove - Remove a marketplace', '/plugin marketplace remove - 移除插件市场')}</Text><Text>{" "}{uiText('/plugin marketplace remove <name> - Remove specific marketplace', '/plugin marketplace remove <name> - 移除指定插件市场')}</Text><Text>{uiText('/plugin marketplace list - List all marketplaces', '/plugin marketplace list - 列出全部插件市场')}</Text><Text> </Text><Text dimColor={true}>{uiText('Validation:', '校验：')}</Text><Text>{" "}{uiText('/plugin validate <path> - Validate a manifest file or directory', '/plugin validate <path> - 校验 manifest 文件或目录')}</Text><Text> </Text><Text dimColor={true}>{uiText('Other:', '其他：')}</Text><Text>{uiText('/plugin - Main plugin menu', '/plugin - 插件主菜单')}</Text><Text>{uiText('/plugin help - Show this help', '/plugin help - 显示此帮助')}</Text><Text>{uiText('/plugins - Alias for /plugin', '/plugins - /plugin 的别名')}</Text></Box>;
       $[28] = t16;
     } else {
       t16 = $[28];
@@ -979,7 +980,7 @@ export function PluginSettings(t0) {
   }
   let t17;
   if ($[44] !== error || $[45] !== markPluginsChanged || $[46] !== result || $[47] !== viewState.targetMarketplace || $[48] !== viewState.targetPlugin || $[49] !== viewState.type) {
-    t17 = <Tab id="discover" title="Discover">{viewState.type === "browse-marketplace" ? <BrowseMarketplace error={error} setError={setError} result={result} setResult={setResult} setViewState={setViewState} onInstallComplete={markPluginsChanged} targetMarketplace={viewState.targetMarketplace} targetPlugin={viewState.targetPlugin} /> : <DiscoverPlugins error={error} setError={setError} result={result} setResult={setResult} setViewState={setViewState} onInstallComplete={markPluginsChanged} onSearchModeChange={setChildSearchActive} targetPlugin={viewState.type === "discover-plugins" ? viewState.targetPlugin : undefined} />}</Tab>;
+    t17 = <Tab id="discover" title={uiText('Discover', '发现')}>{viewState.type === "browse-marketplace" ? <BrowseMarketplace error={error} setError={setError} result={result} setResult={setResult} setViewState={setViewState} onInstallComplete={markPluginsChanged} targetMarketplace={viewState.targetMarketplace} targetPlugin={viewState.targetPlugin} /> : <DiscoverPlugins error={error} setError={setError} result={result} setResult={setResult} setViewState={setViewState} onInstallComplete={markPluginsChanged} onSearchModeChange={setChildSearchActive} targetPlugin={viewState.type === "discover-plugins" ? viewState.targetPlugin : undefined} />}</Tab>;
     $[44] = error;
     $[45] = markPluginsChanged;
     $[46] = result;
@@ -995,7 +996,7 @@ export function PluginSettings(t0) {
   const t20 = viewState.type === "manage-plugins" ? viewState.action : undefined;
   let t21;
   if ($[51] !== markPluginsChanged || $[52] !== t18 || $[53] !== t19 || $[54] !== t20) {
-    t21 = <Tab id="installed" title="Installed"><ManagePlugins setViewState={setViewState} setResult={setResult} onManageComplete={markPluginsChanged} onSearchModeChange={setChildSearchActive} targetPlugin={t18} targetMarketplace={t19} action={t20} /></Tab>;
+    t21 = <Tab id="installed" title={uiText('Installed', '已安装')}><ManagePlugins setViewState={setViewState} setResult={setResult} onManageComplete={markPluginsChanged} onSearchModeChange={setChildSearchActive} targetPlugin={t18} targetMarketplace={t19} action={t20} /></Tab>;
     $[51] = markPluginsChanged;
     $[52] = t18;
     $[53] = t19;
@@ -1008,7 +1009,7 @@ export function PluginSettings(t0) {
   const t23 = viewState.type === "manage-marketplaces" ? viewState.action : undefined;
   let t24;
   if ($[56] !== error || $[57] !== exitState || $[58] !== markPluginsChanged || $[59] !== t22 || $[60] !== t23) {
-    t24 = <Tab id="marketplaces" title="Marketplaces"><ManageMarketplaces setViewState={setViewState} error={error} setError={setError} setResult={setResult} exitState={exitState} onManageComplete={markPluginsChanged} targetMarketplace={t22} action={t23} /></Tab>;
+    t24 = <Tab id="marketplaces" title={uiText('Marketplaces', '插件市场')}><ManageMarketplaces setViewState={setViewState} error={error} setError={setError} setResult={setResult} exitState={exitState} onManageComplete={markPluginsChanged} targetMarketplace={t22} action={t23} /></Tab>;
     $[56] = error;
     $[57] = exitState;
     $[58] = markPluginsChanged;
@@ -1037,7 +1038,7 @@ export function PluginSettings(t0) {
   }
   let t27;
   if ($[67] !== activeTab || $[68] !== childSearchActive || $[69] !== t16 || $[70] !== t17 || $[71] !== t21 || $[72] !== t24 || $[73] !== t26) {
-    t27 = <Pane color="suggestion"><Tabs title="Plugins" selectedTab={activeTab} onTabChange={handleTabChange} color="suggestion" disableNavigation={childSearchActive} banner={t16}>{t17}{t21}{t24}{t26}</Tabs></Pane>;
+    t27 = <Pane color="suggestion"><Tabs title={uiText('Plugins', '插件')} selectedTab={activeTab} onTabChange={handleTabChange} color="suggestion" disableNavigation={childSearchActive} banner={t16}>{t17}{t21}{t24}{t26}</Tabs></Pane>;
     $[67] = activeTab;
     $[68] = childSearchActive;
     $[69] = t16;
